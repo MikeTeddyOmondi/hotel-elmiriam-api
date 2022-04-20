@@ -1,12 +1,10 @@
-require("dotenv").config();
 const bcryptjs = require("bcryptjs");
 const { sign, verify } = require("jsonwebtoken");
 
 const User = require("../models/User.js");
 const Token = require("../models/Token.js");
 
-const REFRESH_SECRET = process.env.REFRESH_SECRET;
-const ACCESS_SECRET = process.env.ACCESS_SECRET;
+const { REFRESH_SECRET, ACCESS_SECRET } = require("../config/config.js");
 
 exports.ApiInfo = async (req, res) => {
 	return res.status(200).json({
@@ -107,7 +105,7 @@ exports.Login = async (req, res) => {
 					id: user._id,
 				},
 				ACCESS_SECRET,
-				{ expiresIn: "90s" },
+				{ expiresIn: "30m" },
 			);
 
 			res.status(200).json({
