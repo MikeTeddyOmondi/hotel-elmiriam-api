@@ -1,12 +1,10 @@
 const express = require("express");
-const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const router = require("./routes/routes.js");
+const cookieParser = require("cookie-parser");
 
-const PORT = 8000;
-const DB_URL =
-	process.env.DB_URL || "mongodb://admin:password@127.0.0.1:27017/auth";
+const {DB_URL, PORT} = require("./config/config.js")
 
 mongoose
 	.connect(DB_URL, {
