@@ -2,7 +2,7 @@
 	"name": "auth",
 	"version": "1.0.0",
 	"description": "auth server",
-	"main": "index.mjs",
+	"main": "index.js",
 	"scripts": {
 		"start": "node src/index.js",
 		"dev": "nodemon src/index.js"
@@ -18,9 +18,7 @@
 		"express": "^4.17.2",
 		"jsonwebtoken": "^8.5.1",
 		"mongoose": "^6.2.10",
-		"morgan": "^1.10.0",
-		"mysql2": "^2.3.3",
-		"typeorm": "^0.2.41"
+		"morgan": "^1.10.0"
 	},
 	"devDependencies": {
 		"nodemon": "^2.0.15"
