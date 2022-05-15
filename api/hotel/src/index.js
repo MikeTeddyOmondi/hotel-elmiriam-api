@@ -19,7 +19,11 @@ mongoose
 		app.use(cookieParser());
 		app.use(
 			cors({
-				origin: ["http://localhost:3000", "http://localhost:8080"],
+				origin: [
+					"http://localhost:3000",
+					"http://localhost:5000",
+					"http://localhost:8080",
+				],
 				credentials: true,
 			}),
 		);
