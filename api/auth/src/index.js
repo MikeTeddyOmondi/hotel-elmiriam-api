@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const router = require("./routes/routes.js");
 const cookieParser = require("cookie-parser");
 
-const {DB_URL, PORT} = require("./config/config.js")
+const { DB_URL, PORT } = require("./config/config.js");
 
 mongoose
 	.connect(DB_URL, {
@@ -19,7 +19,11 @@ mongoose
 		app.use(cookieParser());
 		app.use(
 			cors({
-				origin: ["http://localhost:3000", "http://localhost:8080"],
+				origin: [
+					"http://localhost:3000",
+					"http://localhost:5000",
+					"http://localhost:8080",
+				],
 				credentials: true,
 			}),
 		);

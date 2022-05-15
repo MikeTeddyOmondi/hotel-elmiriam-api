@@ -1,0 +1,21 @@
+version: "3.6"
+
+services:
+  auth:
+    container_name: hotel-elmiriam-auth-svc
+    image: ranckosolutionsinc/auth-service-0.1.0
+    build: ./
+    restart: always
+    environment:
+      - PORT=8000
+    env_file:
+      - ./src/.env
+    networks:
+      - hotel-elmiriam-network
+    # depends_on:
+    #   - mongo
+
+networks:
+  hotel-elmiriam-network:
+    name: hotel-elmiriam
+    driver: bridge
