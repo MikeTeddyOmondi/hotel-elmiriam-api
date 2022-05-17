@@ -6,14 +6,33 @@ services:
     image: ranckosolutionsinc/auth-service-0.1.0
     build: ./
     restart: always
+    ports:
+      - 8000:8000
     environment:
       - PORT=8000
     env_file:
       - ./src/.env
     networks:
       - hotel-elmiriam-network
-    # depends_on:
-    #   - mongo
+    depends_on:
+      - mongo
+
+  mongo:
+    container_name: hotel-elmiriam-mongo-db
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    volumes:
+      - hotel-elmiriam-mongodb-data:/data/db
+    networks:
+      - hotel-elmiriam-network
+
+volumes:
+  hotel-elmiriam-mongodb-data:
 
 networks:
   hotel-elmiriam-network:

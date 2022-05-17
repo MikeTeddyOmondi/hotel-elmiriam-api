@@ -1,8 +1,8 @@
-FROM node:16.13.2
+FROM node:16.13.2-alpine
 
 WORKDIR /app
 
-COPY package*.json .
+COPY package*.json /app/
 
 RUN npm install --silent
 
@@ -13,7 +13,7 @@ RUN if [ "$NODE_ENV" = "development" ]; \
         else npm install --only=production; \
         fi
 
-COPY . /app
+COPY . /app/
 
 USER 1000
 
