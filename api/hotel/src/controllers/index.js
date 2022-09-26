@@ -170,31 +170,43 @@ exports.getAllBookings = (req, res) => {
 		});
 };
 
-// Room Booking List View | Search Customer by ID Number | POST
+// Room Booking List View | Search Customer by ID Number in query paramas | GET 
 exports.searchCustomer = async (req, res) => {
 	// Initialize customerID
-	let customerID;
+	// let customerID;
 
-	// Body | Request
-	const { id_number } = req.body;
+	// Body | Request Params
+	const { id_number } = req.params;
+	console.log(id_number)
 
 	// Search customer with the id
 	await searchCustomer(id_number)
 		.then((customerFound) => {
-			console.log(`> Customer Details: ${customerFound._id}`);
-			customerID = customerFound._id;
-			req.session.customerID = customerID;
+			console.log(`> Customer ID: ${customerFound._id}`);
+			console.log(`> Customer Details: ${customerFound}`);
+			// customerID = customerFound._id;
+			// req.session.customerID = customerID;
+
+			return res.status(200).json({
+				...customerFound
+			})
 		})
 		.catch((err) => {
 			console.log(`> [Controller] error - ${err.message}`);
-			req.flash(
-				"error_msg",
-				`There is no customer with this ID number: ${id_number}...`,
-			);
-			return res.redirect("/admin/bookings/search-customer");
+
+			// req.flash(
+			// 	"error_msg",
+			// 	`There is no customer with this ID number: ${id_number}...`,
+			// );
+
+			// return res.redirect("/admin/bookings/search-customer");
+
+			return res.status(500).json({
+				err
+			})
 		});
 
-	res.redirect("/admin/bookings/booking-details");
+	// res.redirect("/admin/bookings/booking-details");
 };
 
 // Admin Panel - POST | Bookings Details Page

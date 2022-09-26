@@ -16,7 +16,7 @@ router.get("/api/v1", ApiInfo);
 router.get("/api/v1/customers", getAllCustomers);
 router.post("/api/v1/customers", addCustomer);
 router.get("/api/v1/bookings", getAllBookings);
-router.post("/api/v1/customer/<userid>", searchCustomer);
+router.get("/api/v1/customers/<userid>", searchCustomer);
 router.post("/api/v1/invoice/<id>", getBookingInvoice);
 router.post("/api/v1/room/<id>", getRoomInfo);
 
