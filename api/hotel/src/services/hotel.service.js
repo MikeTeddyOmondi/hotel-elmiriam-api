@@ -3,8 +3,8 @@ const { DateTime } = require("luxon");
 
 // Models
 const Customer = require("../models/Customer");
-const Room = require("../models/Room");
 const Booking = require("../models/Booking");
+const Room = require("../models/Room");
 
 // Booking Logic | Customer
 module.exports = {
@@ -55,11 +55,11 @@ module.exports = {
 
 		await Customer.findOne({ id_number: String(customerID) })
 			.then((customerFound) => {
-				console.log(`> CustomerFound: ${customerFound._id}`);
+				// console.log(`> CustomerFound: ${customerFound._id}`);
 				customer = customerFound;
 			})
 			.catch((err) => {
-				console.log(`> [Booking Service] error - ${err}`);
+				// console.log(`> [Booking Service] error - ${err}`);
 				return err;
 			});
 		return customer;
@@ -80,13 +80,58 @@ module.exports = {
 
 		return customer;
 	},
+	fetchAllRooms: async () => {
+		let rooms;
+
+		await Room.find({})
+			.then((allRooms) => {
+				// All Rooms
+				rooms = allRooms;
+			})
+			.catch((err) => {
+				console.log(
+					`> [Booking Service] An error occurred while fetching data - ${err.message}`,
+				);
+				return err;
+			});
+
+		return rooms;
+	},
+	fetchOneRoom: async (id) => {
+		let room = null;
+
+		try {
+			room = await Room.findById(id);
+			console.log(room);
+			return room;
+		} catch (err) {
+			console.log(err);
+			return err;
+		}
+	},
 	findRoom: async (roomNumber) => {
 		// Logic here
 		let roomFound;
 
 		await Room.findOne({ roomNumber })
 			.then((room) => {
-				console.log(`> Room Found: ${room._id}`);
+				// console.log(`> Room Found: ${room._id}`);
+				roomFound = room;
+			})
+			.catch((err) => {
+				console.log(`> [Booking Service] error - ${err.message}`);
+				return err;
+			});
+
+		return roomFound;
+	},
+	findRoomType: async (roomType) => {
+		// Logic here
+		let roomFound;
+
+		await Room.findOne({ roomNumber })
+			.then((room) => {
+				// console.log(`> Room Found: ${room._id}`);
 				roomFound = room;
 			})
 			.catch((err) => {
@@ -149,7 +194,7 @@ module.exports = {
 	},
 	fetchBookings: async () => {
 		// Logic here
-		let allBookings;
+		let allBookings = {};
 
 		await Booking.find({})
 			.populate("customer")
@@ -157,6 +202,7 @@ module.exports = {
 			.then((bookingsMade) => {
 				// console.log(`Bookings made: ${bookingsMade}`);
 				allBookings = bookingsMade;
+				return allBookings;
 			})
 			.catch((err) => {
 				console.log(
@@ -195,27 +241,36 @@ module.exports = {
 
 		return;
 	},
-	checkRoomAvailability: async (roomNumber) => {
+	checkRoomAvailability: async (roomFound, requestedDates) => {
 		let availability;
 
-		await Room.findOne({ roomNumber })
-			.then((room) => {
-				let roomFound = room;
+		const isAvailable = (room) => {
+			const isFound = room.roomNumbers.unavailableDates.some((date) =>
+				requestedDates.includes(new Date(date).getTime()),
+			);
 
-				if (roomFound.isBooked == true) {
-					console.log(`> Room is not available!`);
-					return (availability = true);
-				}
-				console.log(`> Room is available...`);
-				return (availability = false);
-			})
-			.catch((err) => {
-				console.log(
-					`> [Booking Service] error while checking availability - ${err.message}`,
-				);
-				return err;
-			});
+			return !isFound;
+		};
 
-		return availability;
+		return (availability = isAvailable(roomFound));
+	},
+	updateRoomAvailability: async (roomID, dates) => {
+		// roomID => req.params.id
+		let updated = false;
+
+		try {
+			await Room.updateOne(
+				{ _id: roomID },
+				{
+					$push: {
+						unavailableDates: dates,
+					},
+				},
+			);
+			return (updated = true);
+		} catch (err) {
+			console.log(err);
+			return (updated = false);
+		}
 	},
 };

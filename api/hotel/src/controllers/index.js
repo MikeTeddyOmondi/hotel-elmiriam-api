@@ -2,6 +2,8 @@
 // const { sign, verify } = require("jsonwebtoken");
 
 const Customer = require("../models/Customer.js");
+const RoomType = require("../models/RoomType.js");
+const Room = require("../models/Room.js");
 
 // Import Hotel Service
 const {
@@ -11,18 +13,26 @@ const {
 	searchCustomer,
 	findCustomer,
 	findRoom,
+	findRoomType,
 	saveBooking,
 	checkRoomAvailability,
+	updateRoomAvailability,
 	updateRoomStatus,
+	fetchOneRoom,
+	fetchAllRooms,
 } = require("../services/hotel.service");
 
 // const { REFRESH_SECRET, ACCESS_SECRET } = require("../config/config.js");
 
-exports.ApiInfo = async (req, res) => {
-	return res.status(200).json({
-		success: true,
-		message: "Hotel API",
-	});
+exports.ApiInfo = async (req, res, next) => {
+	try {
+		return res.status(200).json({
+			success: true,
+			message: "Hotel API",
+		});
+	} catch (error) {
+		next(error);
+	}
 };
 
 // ________________________________________________
@@ -30,13 +40,17 @@ exports.ApiInfo = async (req, res) => {
 // ________________________________________________
 
 // Add Customers List View | GET
-exports.getAllCustomers = async (req, res) => {
-	const customers = await fetchAllCustomers();
+exports.getAllCustomers = async (req, res, next) => {
+	try {
+		const customers = await fetchAllCustomers();
 
-	res.status(200).json({
-		success: true,
-		customers,
-	});
+		res.status(200).json({
+			success: true,
+			data: { customers },
+		});
+	} catch (error) {
+		next(error);
+	}
 };
 
 // Add Customers | POST
@@ -147,49 +161,45 @@ exports.addCustomer = async (req, res) => {
 // ________________________________________________
 
 // Room Booking List View | GET
-exports.getAllBookings = (req, res) => {
-	let errors = {};
-
+exports.getAllBookings = async (req, res) => {
 	// Fetching All Bookings Made
-	fetchBookings()
-		.then((bookings) => {
-			res.status(200).json({
-				success: true,
-				bookings,
-			});
-		})
-		.catch((err) => {
-			errors = {
-				message: `Error: ${err.message}`,
-			};
+	try {
+		const bookings = await fetchBookings();
 
-			res.status(500).json({
-				success: false,
-				data: errors,
-			});
+		res.status(200).json({
+			success: true,
+			data: { bookings },
 		});
+	} catch (error) {
+		next(error);
+	}
 };
 
-// Room Booking List View | Search Customer by ID Number in query paramas | GET 
+// Room Booking List View | Search Customer by ID Number in query paramas | GET
 exports.searchCustomer = async (req, res) => {
-	// Initialize customerID
-	// let customerID;
-
-	// Body | Request Params
-	const { id_number } = req.params;
-	console.log(id_number)
+	let errors = {};
+	const { idnumber } = req.params;
 
 	// Search customer with the id
-	await searchCustomer(id_number)
+	await searchCustomer(idnumber)
 		.then((customerFound) => {
+			if (!customerFound) {
+				return res.status(500).json({
+					success: true,
+					data: {
+						msg: "No customer found with that ID number",
+					},
+				});
+			}
 			console.log(`> Customer ID: ${customerFound._id}`);
 			console.log(`> Customer Details: ${customerFound}`);
 			// customerID = customerFound._id;
 			// req.session.customerID = customerID;
 
 			return res.status(200).json({
-				...customerFound
-			})
+				success: true,
+				data: { customer: customerFound._doc },
+			});
 		})
 		.catch((err) => {
 			console.log(`> [Controller] error - ${err.message}`);
@@ -202,140 +212,206 @@ exports.searchCustomer = async (req, res) => {
 			// return res.redirect("/admin/bookings/search-customer");
 
 			return res.status(500).json({
-				err
-			})
+				success: false,
+				data: err,
+			});
 		});
 
 	// res.redirect("/admin/bookings/booking-details");
 };
 
 // Admin Panel - POST | Bookings Details Page
-exports.addBookingDetails = async (req, res) => {
-	// Body | Request
+exports.addBookings = async (req, res) => {
+	let errors = {};
+
+	// Destructure the request body
 	const {
-		customerId,
+		customerIdNumber,
 		numberAdults,
 		numberKids,
 		roomType,
-		roomNumber,
 		check_in_date,
 		check_out_date,
 	} = req.body;
 
-	let errors = [];
+	// Search for customer with provided ID number
+	let customerFound = await searchCustomer(customerIdNumber);
 
-	// Initialize booking, customer & room details
-	let bookingDetails;
-	let customerDetails;
-	let roomDetails;
-
-	// Find customer with the customerId
-	await findCustomer(customerId)
-		.then((customerFound) => {
-			// console.log(`> Customer Details: ${customerFound}`);
-			customerDetails = customerFound;
-		})
-		.catch((err) => {
-			console.log(`[Controller] error: ${err}`);
+	if (!customerFound) {
+		return res.status(500).json({
+			success: false,
+			data: {
+				msg: "No customer found with that ID number",
+			},
 		});
+	}
+
+	// Get the customer's object ID
+	const customerId = customerFound._id;
 
 	// Find room given the room number
-	await findRoom(roomNumber)
-		.catch((err) => {
-			console.log(`> [Controller] error: ${err}`);
-		})
-		.then((roomFound) => {
-			// Check Room Availability
+	const roomTypeFound = await findRoomType(roomType);
+	console.log(roomTypeFound);
 
-			// console.log(`> Room Details: ${roomFound}`);
-			roomDetails = roomFound;
-		});
+	const getDatesInRange = (startDate, endDate) => {
+		const start = new Date(startDate);
+		const end = new Date(endDate);
 
-	const { roomRate, _id } = roomDetails;
-	const roomID = _id;
+		const date = new Date(start.getTime());
 
-	// Check room if its available
-	let availability = await checkRoomAvailability(roomNumber);
-	console.log("> Is room booked? ", availability);
+		const dates = [];
 
-	// Booking Logic
-	let numberOccupants = parseInt(numberAdults) + parseInt(numberKids);
+		while (date <= end) {
+			dates.push(new Date(date).getTime());
+			date.setDate(date.getDate() + 1);
+		}
 
-	if (
-		!numberAdults ||
-		!numberKids ||
-		!roomType ||
-		!roomNumber ||
-		!check_in_date ||
-		!check_out_date
-	) {
-		errors.push({ msg: "Please enter all fields" });
-	}
-
-	if (numberOccupants > roomDetails.roomCapacity) {
-		errors.push({ msg: "Room capacity of the chosen room has been exceeded!" });
-	}
-
-	if (availability == true) {
-		errors.push({ msg: "Room is not available. Try another room!" });
-	}
-
-	if (errors.length > 0) {
-		return res.render("admin/addBookingsDetails", {
-			errors,
-			customerID: req.session.customerID,
-			numberAdults,
-			numberKids,
-			roomType,
-			roomNumber,
-			check_in_date,
-			check_out_date,
-			user: req.user,
-			title: "Room Bookings | Accomodation",
-			layout: "./layouts/adminLayout",
-		});
-	}
-	bookingDetails = {
-		customerId,
-		numberAdults,
-		numberKids,
-		roomID,
-		roomType,
-		roomNumber,
-		roomRate,
-		check_in_date,
-		check_out_date,
+		return dates;
 	};
 
-	// Update room status to >>> isBooked: true
-	let result = await updateRoomStatus(roomNumber, true);
+	const alldates = getDatesInRange(check_in_date, check_out_date);
+
+	// Check room if its available
+	// let isRoomAvailable = await checkRoomAvailability(roomFound, alldates);
+	const isAvailable = (roomType) => {
+		const isFound = roomType.unavailableDates.some((date) =>
+			alldates.includes(new Date(date).getTime()),
+		);
+
+		return !isFound;
+	};
+	let isRoomAvailable = isAvailable(roomFound);
+
+	if (isAvailable(roomFound)) {
+		const updated = updateRoomAvailability(roomTypeFound._id, alldates);
+
+		if (updated) {
+			return res.status(200).json({
+				success: true,
+				data: {
+					customerId,
+					alldates,
+					numberKids,
+					numberAdults,
+					isRoomAvailable,
+				},
+			});
+		} else {
+			return res.status(500).json({
+				success: false,
+				data: {
+					msg: "Error updating room availability",
+				},
+			});
+		}
+	} else {
+		return res.status(500).json({
+			success: false,
+			data: {
+				msg: "Room not available",
+			},
+		});
+	}
+
+	// if (availability) {
+	// 	// Update room status availability
+	// 	await updateRoomStatus(roomNumber, true);
+	// }
+
+	// Save the hotel booking
+
+	// Initialize booking, customer & room details
+	// let bookingDetails;
+	// let customerDetails;
+	// let roomDetails;
+
+	// Find customer with the customerId
+	// await findCustomer(customerId)
+	// 	.then((customerFound) => {
+	// 		// console.log(`> Customer Details: ${customerFound}`);
+	// 		customerDetails = customerFound;
+	// 	})
+	// 	.catch((err) => {
+	// 		console.log(`[Controller] error: ${err}`);
+	// 	});
+
+	// const { roomRate, _id } = roomDetails;
+	// const roomID = _id;
+
+	// Booking Logic
+	// let numberOccupants = parseInt(numberAdults) + parseInt(numberKids);
+
+	// if (
+	// 	!numberAdults ||
+	// 	!numberKids ||
+	// 	!roomType ||
+	// 	!roomNumber ||
+	// 	!check_in_date ||
+	// 	!check_out_date
+	// ) {
+	// 	errors.push({ msg: "Please enter all fields" });
+	// }
+
+	// if (numberOccupants > roomDetails.roomCapacity) {
+	// 	errors.push({ msg: "Room capacity of the chosen room has been exceeded!" });
+	// }
+
+	// if (availability == true) {
+	// 	errors.push({ msg: "Room is not available. Try another room!" });
+	// }
+
+	// if (errors.length > 0) {
+	// 	return res.render("admin/addBookingsDetails", {
+	// 		errors,
+	// 		customerID: req.session.customerID,
+	// 		numberAdults,
+	// 		numberKids,
+	// 		roomType,
+	// 		roomNumber,
+	// 		check_in_date,
+	// 		check_out_date,
+	// 		user: req.user,
+	// 		title: "Room Bookings | Accomodation",
+	// 		layout: "./layouts/adminLayout",
+	// 	});
+	// }
+
+	// bookingDetails = {
+	// 	customerId,
+	// 	numberAdults,
+	// 	numberKids,
+	// 	roomID,
+	// 	roomType,
+	// 	roomNumber,
+	// 	roomRate,
+	// 	check_in_date,
+	// 	check_out_date,
+	// };
 
 	// Save booking
-	await saveBooking(bookingDetails)
-		.then((invoiceInfo) => {
-			// console.log(`> [NEW] Booking Info: ${invoiceInfo}`);
-
-			// Load invoice information into the session | request object
-			req.session.bookingID = invoiceInfo._id;
-			req.session.firstname = customerDetails.firstname;
-			req.session.lastname = customerDetails.lastname;
-			req.session.phoneNumber = customerDetails.phone_number;
-			req.session.email = customerDetails.email;
-			req.session.roomType = bookingDetails.roomType;
-			req.session.roomRate = bookingDetails.roomRate;
-			req.session.numberOccupants = numberOccupants;
-			req.session.check_in_date = invoiceInfo.checkInDate;
-			req.session.check_out_date = invoiceInfo.checkOutDate;
-			req.session.subTotal = invoiceInfo.subTotalCost;
-			req.session.VAT = invoiceInfo.vat;
-			req.session.totalCost = invoiceInfo.totalCost;
-
-			// Redirect to Customer Invoice
-			res.redirect("/admin/bookings/invoice");
-		})
-		.catch((err) => {
-			console.log(`> [Controller] error: ${err}`);
-		});
+	// await saveBooking(bookingDetails)
+	// 	.then((invoiceInfo) => {
+	// 		console.log(`> [NEW] Booking Info: ${invoiceInfo}`);
+	// 		Load invoice information into the session | request object
+	// 		req.session.bookingID = invoiceInfo._id;
+	// 		req.session.firstname = customerDetails.firstname;
+	// 		req.session.lastname = customerDetails.lastname;
+	// 		req.session.phoneNumber = customerDetails.phone_number;
+	// 		req.session.email = customerDetails.email;
+	// 		req.session.roomType = bookingDetails.roomType;
+	// 		req.session.roomRate = bookingDetails.roomRate;
+	// 		req.session.numberOccupants = numberOccupants;
+	// 		req.session.check_in_date = invoiceInfo.checkInDate;
+	// 		req.session.check_out_date = invoiceInfo.checkOutDate;
+	// 		req.session.subTotal = invoiceInfo.subTotalCost;
+	// 		req.session.VAT = invoiceInfo.vat;
+	// 		req.session.totalCost = invoiceInfo.totalCost;
+	// 		// Redirect to Customer Invoice
+	// 		res.redirect("/admin/bookings/invoice");
+	// 	})
+	// 	.catch((err) => {
+	// 		console.log(`> [Controller] error: ${err}`);
+	// 	});
 };
 
 // Admin Panel - GET | Bookings Invoice Page
@@ -379,16 +455,45 @@ exports.getBookingInvoice = (req, res) => {
 // ADD ROOM INFORMATION
 // ______________________________________
 
-// Room Info | GET
-exports.getRoomInfo = (req, res) => {
-	// res.render("admin/addRoomInfo", {
-	// 	user: req.user,
-	// 	title: "Add Room Info",
-	// 	layout: "./layouts/adminLayout.ejs",
-	// });
+// CREATE Room Type Info | POST
+exports.createRoomType = async (req, res, next) => {
+	const newRoomType = new RoomType(req.body);
+
+	try {
+		const createdRoomType = await newRoomType.save();
+		res.status(200).json({
+			success: true,
+			data: createdRoomType,
+		});
+	} catch (err) {
+		next(err);
+	}
 };
 
-// Room Info | POST
+// CREATE Room Info | POST
+exports.createRoom = async (req, res, next) => {
+	const { roomtypeid } = req.params;
+	const newRoom = new Room(req.body);
+
+	try {
+		const createdRoom = await newRoom.save();
+		try {
+			await RoomType.findByIdAndUpdate(roomtypeid, {
+				$push: { rooms: createdRoom._id },
+			});
+		} catch (err) {
+			next(err);
+		}
+		res.status(200).json({
+			success: true,
+			data: createdRoom,
+		});
+	} catch (err) {
+		next(err);
+	}
+};
+
+// Room Info | POST Deprecated
 exports.addRoomInfo = (req, res) => {
 	const { roomType, roomCapacity, roomNumber, roomRate, booked } = req.body;
 
@@ -464,4 +569,67 @@ exports.addRoomInfo = (req, res) => {
 			}
 		});
 	}
+};
+
+exports.fetchAllRooms = (req, res) => {
+	let errors = {};
+
+	// Fetching All Bookings Made
+	fetchAllRooms()
+		.then((rooms) => {
+			res.status(200).json({
+				success: true,
+				data: { rooms },
+			});
+		})
+		.catch((err) => {
+			errors = {
+				message: `Error: ${err.message}`,
+			};
+
+			res.status(500).json({
+				success: false,
+				data: errors,
+			});
+		});
+};
+
+exports.allRoomTypes = async (req, res, next) => {
+	// Fetching All Room Types
+	try {
+		const roomTypes = await RoomType.find({}).populate("rooms");
+
+		res.status(200).json({
+			success: true,
+			data: { roomTypes },
+		});
+	} catch (error) {
+		next(error);
+	}
+};
+
+exports.fetchOneRoom = async (req, res, next) => {
+	const { roomid } = req.params;
+	// console.log(roomid);
+	// Fetching All Bookings Made
+	try {
+		const room = await fetchOneRoom(roomid);
+		// console.log(room)
+
+		res.status(200).json({
+			success: true,
+			data: { room },
+		});
+	} catch (error) {
+		next(error);
+	}
+};
+
+exports.searchRoom = async (req, res, next) => {
+	// try {
+	// 	const rooms = await Room.find({roomNumbers.number});
+	// 	res.status(200).json(rooms);
+	// } catch (err) {
+	// 	next(err);
+	// }
 };

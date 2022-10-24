@@ -20,6 +20,11 @@ const BookingSchema = new mongoose.Schema(
 			required: true,
 			ref: "Room",
 		},
+		roomType: {
+			type: mongoose.Schema.Types.ObjectId,
+			required: true,
+			ref: "RoomType",
+		},
 		checkInDate: {
 			type: Date,
 			required: true,
@@ -47,6 +52,13 @@ const BookingSchema = new mongoose.Schema(
 BookingSchema.virtual("occupant", {
 	ref: "Customer",
 	localField: "customer",
+	foreignField: "_id",
+	justOne: true,
+});
+
+BookingSchema.virtual("room-type", {
+	ref: "RoomType",
+	localField: "roomType",
 	foreignField: "_id",
 	justOne: true,
 });

@@ -10,7 +10,7 @@ mongoose
 	.connect(DB_URL, {
 		useNewUrlParser: true,
 		useUnifiedTopology: true,
-		authSource: "admin",
+		// authSource: "admin",
 	})
 	.then(() => {
 		const app = express();
@@ -30,6 +30,18 @@ mongoose
 
 		// routes(app);
 		app.use(router);
+
+		// Error Middleware
+		app.use((err, req, res, next) => {
+			const errorStatus = err.status || 500;
+			const errorMessage = err.message || "Something went wrong!";
+			return res.status(errorStatus).json({
+				success: false,
+				status: errorStatus,
+				message: errorMessage,
+				stack: err.stack,
+			});
+		});
 
 		app.listen(PORT, () => {
 			console.log(`> Service running on http://localhost:${PORT}`);
