@@ -30,7 +30,13 @@ const RoomTypeSchema = new mongoose.Schema(
 				ref: "Room",
 			},
 		],
-		unavailableDates: { type: [Date] },
+		reservations: {
+			bookingRef: {
+				type: mongoose.Schema.Types.ObjectId,
+				ref: "Booking",
+			}, 
+			unavailableDates: { type: [Date] },
+		},
 	},
 	{ timestamps: true },
 );
@@ -40,6 +46,13 @@ RoomTypeSchema.virtual("room", {
 	localField: "rooms",
 	foreignField: "_id",
 	justOne: false,
+});
+
+RoomTypeSchema.virtual("booking", {
+	ref: "Booking",
+	localField: "reservations.bookingRef",
+	foreignField: "_id",
+	justOne: true,
 });
 
 const RoomType = mongoose.model("RoomType", RoomTypeSchema);

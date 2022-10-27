@@ -4,6 +4,7 @@ const { DateTime } = require("luxon");
 // Models
 const Customer = require("../models/Customer");
 const Booking = require("../models/Booking");
+const RoomType = require("../models/RoomType");
 const Room = require("../models/Room");
 
 // Booking Logic | Customer
@@ -127,64 +128,59 @@ module.exports = {
 	},
 	findRoomType: async (roomType) => {
 		// Logic here
-		let roomFound;
+		let data;
 
-		await Room.findOne({ roomNumber })
-			.then((room) => {
-				// console.log(`> Room Found: ${room._id}`);
-				roomFound = room;
-			})
-			.catch((err) => {
-				console.log(`> [Booking Service] error - ${err.message}`);
-				return err;
-			});
+		try {
+			const roomTypeFound = await RoomType.findOne({ roomType });
+			data = roomTypeFound;
+		} catch (err) {
+			console.log(`> [Booking Service] error - ${err.message}`);
+			return err;
+		}
 
-		return roomFound;
+		return data;
 	},
-	saveBooking: async (booking) => {
+	saveBookingAndInvoice: async (booking) => {
 		// Booking Service Logic
 		const {
 			customerId,
 			numberAdults,
 			numberKids,
-			roomRate,
-			roomID,
+			roomId,
 			check_in_date,
 			check_out_date,
 		} = booking;
 
 		// Total number of occupants
-		const numberOccupants = parseInt(numberAdults) + parseInt(numberKids);
+		// const numberOccupants = parseInt(numberAdults) + parseInt(numberKids);
 
 		// Calculate the number of days to stay in the room
-		const days = DateTime.fromISO(check_out_date)
-			.diff(DateTime.fromISO(check_in_date), "days")
-			.toObject().days;
+		// const days = DateTime.fromISO(check_out_date)
+		// 	.diff(DateTime.fromISO(check_in_date), "days")
+		// 	.toObject().days;
 
 		// console.log(`Accomodation Duration = ${days} days`);
 
 		// Initialized Variables
-		const vatPercentage = 16 / 100;
-		const subTotal = numberOccupants * parseInt(roomRate) * days;
-		const VAT = vatPercentage * subTotal;
-		const total = subTotal + VAT;
+		// const vatPercentage = 16 / 100;
+		// const subTotal = numberOccupants * parseInt(roomRate) * days;
+		// const VAT = vatPercentage * subTotal;
+		// const total = subTotal + VAT;
 
 		let newBooking = new Booking({
 			customer: customerId,
 			numberAdults,
 			numberKids,
-			roomsBooked: roomID,
+			roomId,
 			checkInDate: check_in_date,
 			checkOutDate: check_out_date,
-			vat: VAT,
-			subTotalCost: subTotal,
-			totalCost: total,
 		});
 
 		newBooking
 			.save()
-			.then(() => {
+			.then((doc) => {
 				console.log("Saved a new booking!");
+				console.log(doc);
 			})
 			.catch((err) => {
 				console.log("> [Booking Service] error - ", err.message);
@@ -259,7 +255,7 @@ module.exports = {
 		let updated = false;
 
 		try {
-			await Room.updateOne(
+			await RoomType.updateOne(
 				{ _id: roomID },
 				{
 					$push: {

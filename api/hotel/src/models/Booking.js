@@ -15,11 +15,6 @@ const BookingSchema = new mongoose.Schema(
 			type: Number,
 			required: true,
 		},
-		roomBooked: {
-			type: mongoose.Schema.Types.ObjectId,
-			required: true,
-			ref: "Room",
-		},
 		roomType: {
 			type: mongoose.Schema.Types.ObjectId,
 			required: true,
@@ -31,18 +26,6 @@ const BookingSchema = new mongoose.Schema(
 		},
 		checkOutDate: {
 			type: Date,
-			required: true,
-		},
-		vat: {
-			type: Number,
-			required: true,
-		},
-		subTotalCost: {
-			type: Number,
-			required: true,
-		},
-		totalCost: {
-			type: Number,
 			required: true,
 		},
 	},
@@ -63,12 +46,12 @@ BookingSchema.virtual("room-type", {
 	justOne: true,
 });
 
-BookingSchema.virtual("rooms-booked", {
-	ref: "Room",
-	localField: "roomsBooked",
-	foreignField: "_id",
-	justOne: true,
-});
+// BookingSchema.virtual("rooms-booked", {
+// 	ref: "Room",
+// 	localField: "roomsBooked",
+// 	foreignField: "_id",
+// 	justOne: true,
+// });
 
 const Booking = mongoose.model("Booking", BookingSchema);
 

@@ -14,7 +14,7 @@ const {
 	findCustomer,
 	findRoom,
 	findRoomType,
-	saveBooking,
+	saveBookingAndInvoice,
 	checkRoomAvailability,
 	updateRoomAvailability,
 	updateRoomStatus,
@@ -251,7 +251,7 @@ exports.addBookings = async (req, res) => {
 
 	// Find room given the room number
 	const roomTypeFound = await findRoomType(roomType);
-	console.log(roomTypeFound);
+	console.log("> roomTypeFound: ", roomTypeFound);
 
 	const getDatesInRange = (startDate, endDate) => {
 		const start = new Date(startDate);
@@ -274,27 +274,41 @@ exports.addBookings = async (req, res) => {
 	// Check room if its available
 	// let isRoomAvailable = await checkRoomAvailability(roomFound, alldates);
 	const isAvailable = (roomType) => {
-		const isFound = roomType.unavailableDates.some((date) =>
+		const isFound = roomType.reservations.unavailableDates.some((date) =>
 			alldates.includes(new Date(date).getTime()),
 		);
 
 		return !isFound;
 	};
-	let isRoomAvailable = isAvailable(roomFound);
+	let isRoomAvailable = isAvailable(roomTypeFound);
+	const roomTypeID = roomTypeFound._id;
 
-	if (isAvailable(roomFound)) {
+	const bookingDetails = {
+		customerId,
+		numberKids,
+		numberAdults,
+		roomTypeID,
+		check_in_date,
+		check_out_date,
+	};
+
+	if (isAvailable(roomTypeFound)) {
 		const updated = updateRoomAvailability(roomTypeFound._id, alldates);
 
 		if (updated) {
+
+			const totalPeople = parseInt(numberKids) + parseInt(numberAdults)
+			if (roomTypeFound.capacity === totalPeople) {
+
+
+				// Make the reservation & Generate Invoice
+				const reservation = await saveBookingAndInvoice(bookingDetails);
+				
+			}
+
 			return res.status(200).json({
 				success: true,
-				data: {
-					customerId,
-					alldates,
-					numberKids,
-					numberAdults,
-					isRoomAvailable,
-				},
+				data: {},
 			});
 		} else {
 			return res.status(500).json({
@@ -313,105 +327,14 @@ exports.addBookings = async (req, res) => {
 		});
 	}
 
-	// if (availability) {
-	// 	// Update room status availability
-	// 	await updateRoomStatus(roomNumber, true);
-	// }
-
 	// Save the hotel booking
 
 	// Initialize booking, customer & room details
-	// let bookingDetails;
-	// let customerDetails;
-	// let roomDetails;
-
-	// Find customer with the customerId
-	// await findCustomer(customerId)
-	// 	.then((customerFound) => {
-	// 		// console.log(`> Customer Details: ${customerFound}`);
-	// 		customerDetails = customerFound;
-	// 	})
-	// 	.catch((err) => {
-	// 		console.log(`[Controller] error: ${err}`);
-	// 	});
-
-	// const { roomRate, _id } = roomDetails;
-	// const roomID = _id;
 
 	// Booking Logic
-	// let numberOccupants = parseInt(numberAdults) + parseInt(numberKids);
-
-	// if (
-	// 	!numberAdults ||
-	// 	!numberKids ||
-	// 	!roomType ||
-	// 	!roomNumber ||
-	// 	!check_in_date ||
-	// 	!check_out_date
-	// ) {
-	// 	errors.push({ msg: "Please enter all fields" });
-	// }
-
-	// if (numberOccupants > roomDetails.roomCapacity) {
-	// 	errors.push({ msg: "Room capacity of the chosen room has been exceeded!" });
-	// }
-
-	// if (availability == true) {
-	// 	errors.push({ msg: "Room is not available. Try another room!" });
-	// }
-
-	// if (errors.length > 0) {
-	// 	return res.render("admin/addBookingsDetails", {
-	// 		errors,
-	// 		customerID: req.session.customerID,
-	// 		numberAdults,
-	// 		numberKids,
-	// 		roomType,
-	// 		roomNumber,
-	// 		check_in_date,
-	// 		check_out_date,
-	// 		user: req.user,
-	// 		title: "Room Bookings | Accomodation",
-	// 		layout: "./layouts/adminLayout",
-	// 	});
-	// }
-
-	// bookingDetails = {
-	// 	customerId,
-	// 	numberAdults,
-	// 	numberKids,
-	// 	roomID,
-	// 	roomType,
-	// 	roomNumber,
-	// 	roomRate,
-	// 	check_in_date,
-	// 	check_out_date,
-	// };
 
 	// Save booking
-	// await saveBooking(bookingDetails)
-	// 	.then((invoiceInfo) => {
-	// 		console.log(`> [NEW] Booking Info: ${invoiceInfo}`);
-	// 		Load invoice information into the session | request object
-	// 		req.session.bookingID = invoiceInfo._id;
-	// 		req.session.firstname = customerDetails.firstname;
-	// 		req.session.lastname = customerDetails.lastname;
-	// 		req.session.phoneNumber = customerDetails.phone_number;
-	// 		req.session.email = customerDetails.email;
-	// 		req.session.roomType = bookingDetails.roomType;
-	// 		req.session.roomRate = bookingDetails.roomRate;
-	// 		req.session.numberOccupants = numberOccupants;
-	// 		req.session.check_in_date = invoiceInfo.checkInDate;
-	// 		req.session.check_out_date = invoiceInfo.checkOutDate;
-	// 		req.session.subTotal = invoiceInfo.subTotalCost;
-	// 		req.session.VAT = invoiceInfo.vat;
-	// 		req.session.totalCost = invoiceInfo.totalCost;
-	// 		// Redirect to Customer Invoice
-	// 		res.redirect("/admin/bookings/invoice");
-	// 	})
-	// 	.catch((err) => {
-	// 		console.log(`> [Controller] error: ${err}`);
-	// 	});
+
 };
 
 // Admin Panel - GET | Bookings Invoice Page
