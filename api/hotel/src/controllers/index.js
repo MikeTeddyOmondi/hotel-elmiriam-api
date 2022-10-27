@@ -1,5 +1,6 @@
 // const bcryptjs = require("bcryptjs");
 // const { sign, verify } = require("jsonwebtoken");
+const { createError } = require("../utils/error");
 
 const Customer = require("../models/Customer.js");
 const RoomType = require("../models/RoomType.js");
@@ -20,6 +21,7 @@ const {
 	updateRoomStatus,
 	fetchOneRoom,
 	fetchAllRooms,
+	checkRoomTypeCapacity,
 } = require("../services/hotel.service");
 
 // const { REFRESH_SECRET, ACCESS_SECRET } = require("../config/config.js");
@@ -221,9 +223,7 @@ exports.searchCustomer = async (req, res) => {
 };
 
 // Admin Panel - POST | Bookings Details Page
-exports.addBookings = async (req, res) => {
-	let errors = {};
-
+exports.addBookings = async (req, res, next) => {
 	// Destructure the request body
 	const {
 		customerIdNumber,
@@ -238,21 +238,17 @@ exports.addBookings = async (req, res) => {
 	let customerFound = await searchCustomer(customerIdNumber);
 
 	if (!customerFound) {
-		return res.status(500).json({
-			success: false,
-			data: {
-				msg: "No customer found with that ID number",
-			},
-		});
+		return createError(500, `No customer found with that ID number`);
 	}
 
 	// Get the customer's object ID
 	const customerId = customerFound._id;
 
-	// Find room given the room number
+	// Find room given the room type
 	const roomTypeFound = await findRoomType(roomType);
 	console.log("> roomTypeFound: ", roomTypeFound);
 
+	// Date ranges
 	const getDatesInRange = (startDate, endDate) => {
 		const start = new Date(startDate);
 		const end = new Date(endDate);
@@ -280,61 +276,71 @@ exports.addBookings = async (req, res) => {
 
 		return !isFound;
 	};
-	let isRoomAvailable = isAvailable(roomTypeFound);
+
 	const roomTypeID = roomTypeFound._id;
 
-	const bookingDetails = {
-		customerId,
-		numberKids,
-		numberAdults,
-		roomTypeID,
-		check_in_date,
-		check_out_date,
-	};
+	let isRoomAvailable = isAvailable(roomTypeFound);
+	console.log("> isRoomAvailable: ", isRoomAvailable);
 
-	if (isAvailable(roomTypeFound)) {
-		const updated = updateRoomAvailability(roomTypeFound._id, alldates);
+	const totalPeople = parseInt(numberKids) + parseInt(numberAdults);
+	console.log("> totalPeople: ", totalPeople);
 
-		if (updated) {
+	// If room is available proceed to reservation
+	if (isRoomAvailable) {
+		const bookingDetails = {
+			customerId,
+			numberKids,
+			numberAdults,
+			roomType: roomTypeID,
+			check_in_date,
+			check_out_date,
+		};
+		console.log("> bookingDetails: ", bookingDetails);
 
-			const totalPeople = parseInt(numberKids) + parseInt(numberAdults)
-			if (roomTypeFound.capacity === totalPeople) {
+		// Reservation
+		try {
+			// check room capacity
+			const roomTypeMaxCapacity = await checkRoomTypeCapacity(roomTypeFound);
+			console.log("> roomTypeMaxCapacity: ", roomTypeMaxCapacity);
 
+			if (roomTypeMaxCapacity > totalPeople) {
+				try {
+					// Room Type Rate
+					const rate = roomTypeFound.rate;
 
-				// Make the reservation & Generate Invoice
-				const reservation = await saveBookingAndInvoice(bookingDetails);
-				
+					// Create Reservation
+					const data = await saveBookingAndInvoice(
+						bookingDetails,
+						rate,
+						customerId,
+					);
+					// console.log("> booking: ", booking);
+					console.log("> Ok");
+
+					// Updated Room Availability
+					const updated = await updateRoomAvailability(
+						roomTypeFound._id,
+						alldates,
+						booking._id,
+					);
+					console.log("> updated: ", updated);
+
+					if (updated) {
+						return res.status(200).json({
+							success: true,
+							data: {},
+						});
+					}
+				} catch (error) {
+					return createError(500, `Error: error.message`);
+				}
 			}
-
-			return res.status(200).json({
-				success: true,
-				data: {},
-			});
-		} else {
-			return res.status(500).json({
-				success: false,
-				data: {
-					msg: "Error updating room availability",
-				},
-			});
+		} catch (error) {
+			return createError(500, "Room capacity exceeded");
 		}
 	} else {
-		return res.status(500).json({
-			success: false,
-			data: {
-				msg: "Room not available",
-			},
-		});
+		return createError(500, "Room not available");
 	}
-
-	// Save the hotel booking
-
-	// Initialize booking, customer & room details
-
-	// Booking Logic
-
-	// Save booking
-
 };
 
 // Admin Panel - GET | Bookings Invoice Page
@@ -531,21 +537,15 @@ exports.allRoomTypes = async (req, res, next) => {
 	}
 };
 
-exports.fetchOneRoom = async (req, res, next) => {
+exports.fetchOneRoom = async (req, res) => {
 	const { roomid } = req.params;
-	// console.log(roomid);
-	// Fetching All Bookings Made
-	try {
-		const room = await fetchOneRoom(roomid);
-		// console.log(room)
 
-		res.status(200).json({
-			success: true,
-			data: { room },
-		});
-	} catch (error) {
-		next(error);
-	}
+	const room = await fetchOneRoom(roomid);
+
+	res.status(200).json({
+		success: true,
+		data: { room },
+	});
 };
 
 exports.searchRoom = async (req, res, next) => {
