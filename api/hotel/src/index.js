@@ -29,7 +29,7 @@ mongoose
 		);
 
 		// routes(app);
-		app.use(router);
+		app.use("/api/v1",router);
 
 		// Error Middleware
 		app.use((err, req, res, next) => {
