@@ -60,12 +60,14 @@ module.exports = {
 
 		await Customer.findOne({ id_number: String(customerID) })
 			.then((customerFound) => {
-				// console.log(`> CustomerFound: ${customerFound._id}`);
+				console.log(`> CustomerFound: ${customerFound._id}`);
 				customer = customerFound;
 			})
 			.catch((err) => {
-				// console.log(`> [Booking Service] error - ${err}`);
-				return err;
+				console.log(`> [Booking Service (CUSTOMER NOT FOUND ERROR)] - ${err}`);
+				customer = null;
+				// return err;
+				return;
 			});
 		return customer;
 	},
@@ -102,17 +104,17 @@ module.exports = {
 
 		return rooms;
 	},
-	fetchOneRoom: async (id) => {
-		try {
-			let room = await Room.findById(id);
-			if (room !== null) {
-				room = room;
-			}
-		} catch (err) {
-			console.log(err);
-			return createError(500, `No room found with that _id`);
-		}
-	},
+	// fetchOneRoom: async (id) => {
+	// 	try {
+	// 		let room = await Room.findById(id);
+	// 		if (room !== null) {
+	// 			room = room;
+	// 		}
+	// 	} catch (err) {
+	// 		console.log(err);
+	// 		return createError(500, `No room found with that _id`);
+	// 	}
+	// },
 	findRoom: async (roomNumber) => {
 		// Logic here
 		let roomFound;
@@ -273,20 +275,22 @@ module.exports = {
 	updateRoomTypeAvailability: async (roomID, dates, bookingID) => {
 		// roomID => req.params.id
 		let updated = false;
+		console.log({ roomID, dates, bookingID });
 
 		try {
-			const updatedDoc = await RoomType.updateOne(
+			await RoomType.updateOne(
 				{ _id: roomID },
 				{
-					// 	reservations: {
-					// 		bookingRef: bookingID,
-					// 		$push: {
-					// 			unavailableDates: dates,
-					// 	},
+					$push: { "reservations.bookingRef": bookingID },
+				},
+			);
+			await RoomType.updateOne(
+				{ _id: roomID },
+				{
+					$push: { "reservations.unavailableDates": dates },
 				},
 			);
 
-			console.log("> updatedDoc: ", updatedDoc);
 			return (updated = true);
 		} catch (err) {
 			console.log(err);

@@ -17,7 +17,7 @@ const {
 	findRoomType,
 	saveBookingAndInvoice,
 	checkRoomAvailability,
-	updateRoomAvailability,
+	updateRoomTypeAvailability,
 	updateRoomStatus,
 	fetchOneRoom,
 	fetchAllRooms,
@@ -237,8 +237,8 @@ exports.addBookings = async (req, res, next) => {
 	// Search for customer with provided ID number
 	let customerFound = await searchCustomer(customerIdNumber);
 
-	if (!customerFound) {
-		return createError(500, `No customer found with that ID number`);
+	if (customerFound === null) {
+		return next(createError(500, `No customer found with that ID number`));
 	}
 
 	// Get the customer's object ID
@@ -298,48 +298,51 @@ exports.addBookings = async (req, res, next) => {
 		console.log("> bookingDetails: ", bookingDetails);
 
 		// Reservation
-		try {
-			// check room capacity
-			const roomTypeMaxCapacity = await checkRoomTypeCapacity(roomTypeFound);
-			console.log("> roomTypeMaxCapacity: ", roomTypeMaxCapacity);
 
-			if (roomTypeMaxCapacity > totalPeople) {
-				try {
-					// Room Type Rate
-					const rate = roomTypeFound.rate;
+		// check room capacity
+		const roomTypeMaxCapacity = await checkRoomTypeCapacity(roomTypeFound);
+		console.log("> roomTypeMaxCapacity: ", roomTypeMaxCapacity);
 
-					// Create Reservation
-					const data = await saveBookingAndInvoice(
-						bookingDetails,
-						rate,
-						customerId,
-					);
-					// console.log("> booking: ", booking);
-					console.log("> Ok");
+		if (roomTypeMaxCapacity >= totalPeople) {
+			try {
+				// Room Type Rate
+				const rate = roomTypeFound.rate;
 
-					// Updated Room Availability
-					const updated = await updateRoomAvailability(
-						roomTypeFound._id,
-						alldates,
-						booking._id,
-					);
-					console.log("> updated: ", updated);
+				// Create Reservation
+				const { newBooking, newInvoice } = await saveBookingAndInvoice(
+					bookingDetails,
+					rate,
+					customerId,
+				);
+				// console.log("> booking: ", booking);
+				console.log("> Ok");
 
-					if (updated) {
-						return res.status(200).json({
-							success: true,
-							data: {},
-						});
-					}
-				} catch (error) {
-					return createError(500, `Error: error.message`);
+				// Updated Room Availability
+				const updated = await updateRoomTypeAvailability(
+					roomTypeFound._id,
+					alldates,
+					newBooking._id,
+				);
+				console.log("> updated: ", updated);
+
+				if (updated) {
+					return res.status(200).json({
+						success: true,
+						data: {
+							newBooking,
+							newInvoice,
+						},
+					});
 				}
+			} catch (error) {
+				console.log(error);
+				return next(createError(500, `Error: error.message`));
 			}
-		} catch (error) {
-			return createError(500, "Room capacity exceeded");
+		} else {
+			return next(createError(500, "Room capacity exceeded"));
 		}
 	} else {
-		return createError(500, "Room not available");
+		return next(createError(500, "Room not available"));
 	}
 };
 
@@ -405,101 +408,112 @@ exports.createRoom = async (req, res, next) => {
 	const newRoom = new Room(req.body);
 
 	try {
-		const createdRoom = await newRoom.save();
-		try {
-			await RoomType.findByIdAndUpdate(roomtypeid, {
-				$push: { rooms: createdRoom._id },
+		const createdRoomId = newRoom._id;
+		// console.log("> createdRoomId: ", createdRoomId);
+
+		await RoomType.updateOne(
+			{ _id: roomtypeid },
+			{
+				$push: { rooms: createdRoomId },
+			},
+		)
+			.then(async () => {
+				const createdRoom = await newRoom.save();
+
+				res.status(200).json({
+					success: true,
+					data: createdRoom,
+				});
+			})
+			.catch((err) => {
+				console.log("> Error: ", err.message);
+				return next(createError(500, "Error creating room"));
 			});
-		} catch (err) {
-			next(err);
-		}
-		res.status(200).json({
-			success: true,
-			data: createdRoom,
-		});
 	} catch (err) {
-		next(err);
+		console.log("> Error: ", err.message);
+		return next(createError(500, "Error creating room"));
 	}
 };
 
 // Room Info | POST Deprecated
-exports.addRoomInfo = (req, res) => {
-	const { roomType, roomCapacity, roomNumber, roomRate, booked } = req.body;
+// exports.addRoomInfo = (req, res) => {
+// 	const { roomType, roomCapacity, roomNumber, roomRate, booked } = req.body;
 
-	let errors = [];
-	let isBooked;
+// 	let errors = [];
+// 	let isBooked;
 
-	if (!roomType || !roomCapacity || !roomNumber || !roomRate || !booked) {
-		errors.push({ msg: "Please enter all fields" });
-	}
+// 	if (!roomType || !roomCapacity || !roomNumber || !roomRate || !booked) {
+// 		errors.push({ msg: "Please enter all fields" });
+// 	}
 
-	if (errors.length > 0) {
-		res.render("admin/addRoomInfo", {
-			errors,
-			roomType,
-			roomCapacity,
-			roomNumber,
-			roomRate,
-			booked,
-			user: req.user,
-			title: "Add Room Info",
-			layout: "./layouts/adminLayout",
-		});
-	} else {
-		// Check if the room exists in the database
-		Room.findOne({ roomNumber: roomNumber }).then((roomNumber) => {
-			if (roomNumber) {
-				errors.push({
-					msg: `A room with that number already exists!`,
-				});
-				res.render("admin/addRoomInfo", {
-					errors,
-					roomType,
-					roomCapacity,
-					roomNumber: req.body.roomNumber,
-					roomRate,
-					booked,
-					user: req.user,
-					title: "Add Room Info",
-					layout: "./layouts/adminLayout",
-				});
-			} else {
-				// Initialize room booking to false
-				if (booked == "false") {
-					isBooked = false;
-				} else {
-					isBooked = true;
-				}
+// 	if (errors.length > 0) {
+// 		res.render("admin/addRoomInfo", {
+// 			errors,
+// 			roomType,
+// 			roomCapacity,
+// 			roomNumber,
+// 			roomRate,
+// 			booked,
+// 			user: req.user,
+// 			title: "Add Room Info",
+// 			layout: "./layouts/adminLayout",
+// 		});
+// 	} else {
+// 		// Check if the room exists in the database
+// 		Room.findOne({ roomNumber: roomNumber }).then((roomNumber) => {
+// 			if (roomNumber) {
+// 				errors.push({
+// 					msg: `A room with that number already exists!`,
+// 				});
+// 				res.render("admin/addRoomInfo", {
+// 					errors,
+// 					roomType,
+// 					roomCapacity,
+// 					roomNumber: req.body.roomNumber,
+// 					roomRate,
+// 					booked,
+// 					user: req.user,
+// 					title: "Add Room Info",
+// 					layout: "./layouts/adminLayout",
+// 				});
+// 			} else {
+// 				// Initialize room booking to false
+// 				if (booked == "false") {
+// 					isBooked = false;
+// 				} else {
+// 					isBooked = true;
+// 				}
 
-				const newRoom = new Room({
-					roomType: roomType,
-					roomCapacity: roomCapacity,
-					roomNumber: req.body.roomNumber,
-					roomRate: roomRate,
-					isBooked: isBooked,
-				});
+// 				const newRoom = new Room({
+// 					roomType: roomType,
+// 					roomCapacity: roomCapacity,
+// 					roomNumber: req.body.roomNumber,
+// 					roomRate: roomRate,
+// 					isBooked: isBooked,
+// 				});
 
-				newRoom
-					.save()
-					.then(() => {
-						req.flash(
-							"success_msg",
-							`Room information was saved successfully!`,
-						);
-						res.redirect("/admin/add-room-info");
-					})
-					.catch((err) => {
-						req.flash(
-							"error_msg",
-							`An error occurred while saving the room...`,
-						);
-						res.redirect("/admin/add-room-info");
-					});
-			}
-		});
-	}
-};
+// 				newRoom
+// 					.save()
+// 					.then(() => {
+// 						req.flash(
+// 							"success_msg",
+// 							`Room information was saved successfully!`,
+// 						);
+// 						res.redirect("/admin/add-room-info");
+// 					})
+// 					.catch((err) => {
+// 						req.flash(
+// 							"error_msg",
+// 							`An error occurred while saving the room...`,
+// 						);
+// 						res.redirect("/admin/add-room-info");
+// 					});
+// 			}
+// 		});
+// 	}
+// };
 
+// READ All Rooms Info | GET
 exports.fetchAllRooms = (req, res) => {
 	let errors = {};
 
@@ -523,10 +537,11 @@ exports.fetchAllRooms = (req, res) => {
 		});
 };
 
+// READ All Room Types | GET
 exports.allRoomTypes = async (req, res, next) => {
 	// Fetching All Room Types
 	try {
-		const roomTypes = await RoomType.find({}).populate("rooms");
+		const roomTypes = await RoomType.find({});
 
 		res.status(200).json({
 			success: true,
@@ -537,17 +552,37 @@ exports.allRoomTypes = async (req, res, next) => {
 	}
 };
 
-exports.fetchOneRoom = async (req, res) => {
-	const { roomid } = req.params;
+// UPDATE Room Type Info | PUT
+exports.updateRoomType = async (req, res, next) => {
+	// Fetching All Room Types
+	try {
+		const roomTypes = await RoomType.find({});
 
-	const room = await fetchOneRoom(roomid);
-
-	res.status(200).json({
-		success: true,
-		data: { room },
-	});
+		res.status(200).json({
+			success: true,
+			data: { roomTypes },
+		});
+	} catch (error) {
+		next(error);
+	}
 };
 
+// READ One Room Info | GET
+exports.fetchOneRoom = async (req, res, next) => {
+	const { roomid } = req.params;
+	const room = await fetchOneRoom(roomid);
+
+	if (room) {
+		res.status(200).json({
+			success: true,
+			data: { room },
+		});
+	} else {
+		return next(createError(404, "Room not found"));
+	}
+};
+
+// READ One Room | GET - Using Room Number 
 exports.searchRoom = async (req, res, next) => {
 	// try {
 	// 	const rooms = await Room.find({roomNumbers.number});

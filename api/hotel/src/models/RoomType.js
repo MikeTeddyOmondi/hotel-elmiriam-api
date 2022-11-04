@@ -24,18 +24,16 @@ const RoomTypeSchema = new mongoose.Schema(
 			unique: true,
 			required: true,
 		},
-		rooms: [
-			{
-				type: mongoose.Schema.Types.ObjectId,
-				ref: "Room",
-			},
-		],
+		rooms: {
+			type: [mongoose.Schema.Types.ObjectId],
+		},
 		reservations: {
 			bookingRef: {
-				type: mongoose.Schema.Types.ObjectId,
-				ref: "Booking",
-			}, 
-			unavailableDates: { type: [Date] },
+				type: [mongoose.Schema.Types.ObjectId],
+			},
+			unavailableDates: {
+				type: [Date],
+			},
 		},
 	},
 	{ timestamps: true },
