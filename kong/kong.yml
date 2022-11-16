@@ -1,0 +1,58 @@
+_format_version: "2.1"
+_transform: true
+
+services:
+  - name: auth-service
+    url: http://localhost:8000
+    routes:
+      - name: auth-service-route
+        paths:
+          - /auth
+  - name: hotel-service
+    url: http://localhost:8003
+    routes:
+      - name: hotel-service-route
+        paths:
+          - /hotel
+  - name: bar-service
+    url: http://localhost:8004
+    routes:
+      - name: bar-service-route
+        paths:
+          - /bar
+  - name: restaurant-service
+    url: http://localhost:8005
+    routes:
+      - name: hotel-service-route
+        paths:
+          - /hotel
+
+plugins:
+  - name: jwt
+    service: hotel-service
+    enabled: true
+    config:
+      key_claim_name: kid
+      claims_to_verify:
+        - exp
+  - name: jwt
+    service: bar-service
+    enabled: true
+    config:
+      key_claim_name: kid
+      claims_to_verify:
+        - exp
+  - name: jwt
+    service: restaurant-service
+    enabled: true
+    config:
+      key_claim_name: kid
+      claims_to_verify:
+        - exp
+
+consumers:
+  - username: auth_issuer
+
+jwt_secrets:
+  - consumer: auth_issuer
+    secret: "aSDF234EFDGFHDGR&234234234SDSFGD34732"
