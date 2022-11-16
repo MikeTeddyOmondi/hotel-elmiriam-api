@@ -10,6 +10,8 @@ services:
       - PORT=8003
     env_file:
       - ./src/.env
+    ports:
+      - "8003:8003"
     networks:
       - hotel-elmiriam-network
     # depends_on:
