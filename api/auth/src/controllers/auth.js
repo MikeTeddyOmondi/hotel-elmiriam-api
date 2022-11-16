@@ -4,7 +4,7 @@ const { sign, verify } = require("jsonwebtoken");
 const User = require("../models/User.js");
 const Token = require("../models/Token.js");
 
-const { REFRESH_SECRET, ACCESS_SECRET } = require("../config/config.js");
+const { REFRESH_SECRET, ACCESS_SECRET, KID } = require("../config/config.js");
 
 exports.ApiInfo = async (req, res) => {
 	return res.status(200).json({
@@ -76,7 +76,7 @@ exports.Login = async (req, res) => {
 			id: user._id,
 		},
 		REFRESH_SECRET,
-		{ expiresIn: "1w" },
+		{ expiresIn: "1w", header: { kid: KID } },
 	);
 
 	res.cookie("refreshToken", refreshToken, {
@@ -105,7 +105,7 @@ exports.Login = async (req, res) => {
 					id: user._id,
 				},
 				ACCESS_SECRET,
-				{ expiresIn: "30m" },
+				{ expiresIn: "30m", header: { kid: KID } },
 			);
 
 			res.status(200).json({
