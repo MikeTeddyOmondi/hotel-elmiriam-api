@@ -1,44 +1,73 @@
+const { v4: uuidv4 } = require("uuid");
+
 // Load User model
 const BarPurchase = require("../models/BarPurchase");
 const BarSale = require("../models/BarSale");
 const Drink = require("../models/Drink");
 
-// Image Uploader Service
-const { upload } = require("../services/drinkImageUpload");
+// Utils
+const { createError } = require("../utils/error");
 
 // Import Bar Service
 const {
 	saveDrink,
 	searchDrink,
+	findDrink,
 	fetchAllDrinks,
 	saveBarPurchase,
 	fetchBarPurchases,
 	updateStockQuantity,
 } = require("../services/bar.service");
 
+exports.apiInfo = (req, res) => {
+	res.status(200).json({
+		success: true,
+		message: "Bar API",
+		description: "Bar API | Version 1",
+	});
+};
+
 // ______________________________________
 // ADD BAR DRINKS INFORMATION
 // ______________________________________
 
-// Add Bar Drink | Menu Updates | GET
-exports.getAddBarDrinkPanel = (req, res) => {
-	res.render("admin/addBarDrink", {
-		user: req.user,
-		title: "Add Bar Drink | Menu",
-		layout: "./layouts/adminLayout.ejs",
-	});
+// Bar Drink | Menu Updates | GET (ALL)
+exports.getBarDrinks = async (req, res, next) => {
+	try {
+		const drinks = await fetchAllDrinks();
+		res.status(200).json({
+			success: true,
+			data: { drinks },
+		});
+	} catch (error) {
+		return next(createError(500, "Error fetching drinks"));
+	}
 };
 
-// Add Bar Drink | Menu Updates | POST
-exports.postAddBarDrinkPanel = (req, res) => {
-	const { drinkName, drinkCode, typeOfDrink, uom, buyingPrice, sellingPrice, filString } =
-		req.body;
-	const image = req.file;
-	console.log(image)
+// Bar Drink | Menu Updates | GET (ONE)
+exports.getOneBarDrink = async (req, res, next) => {
+	const objectID = req.params.id;
+	try {
+		const drink = await findDrink(objectID);
+		res.status(200).json({
+			success: true,
+			data: { drink },
+		});
+	} catch (error) {
+		return next(createError(500, "Error fetching the drink"));
+	}
+};
 
-	// console.log({ drinkName, drinkCode, typeOfDrink, uom, buyingPrice, sellingPrice, image });
+// Bar Drink | Menu Updates | POST
+exports.addBarDrinks = async (req, res, next) => {
+	const bodyData = JSON.parse(req.body.data);
+	const { drinkName, drinkCode, typeOfDrink, uom, buyingPrice, sellingPrice } =
+		bodyData;
 
-	let errors = [];
+	const { mimetype, originalname, size, path } = req.file;
+	console.log({ mimetype, originalname, size, path });
+
+	let errors = {};
 
 	if (
 		!drinkName ||
@@ -46,76 +75,97 @@ exports.postAddBarDrinkPanel = (req, res) => {
 		!typeOfDrink ||
 		!uom ||
 		!buyingPrice ||
-		!sellingPrice ||
-		!image
+		!sellingPrice
 	) {
-		errors.push({ msg: "Please enter all fields" });
-	}
+		errors = { message: "Please enter all fields" };
 
-	if (errors.length > 0) {
-		res.render("admin/addBarDrink", {
-			errors,
-			drinkName,
-			drinkCode,
-			typeOfDrink,
-			uom,
-			buyingPrice,
-			sellingPrice,
-			image,
-			user: req.user,
-			title: "Add Bar Drink | Menu",
-			layout: "./layouts/adminLayout.ejs",
-		});
-	} else {
-		// Check if the drink code exists in the database
-		searchDrink(drinkCode).then(({ drinkCode }) => {
-			if (drinkCode) {
-				errors.push({
-					msg: `That drink code already exists!`,
-				});
-				res.render("admin/addBarDrink", {
-					errors,
-					drinkName,
-					drinkCode,
-					typeOfDrink,
-					uom,
-					buyingPrice,
-					sellingPrice,
-					image,
-					user: req.user,
-					title: "Add Bar Drink | Menu",
-					layout: "./layouts/adminLayout.ejs",
-				});
-			} else {
-				const newDrink = new Drink({
-					drinkName,
-					drinkCode: req.body.drinkCode,
-					typeOfDrink,
-					uom,
-					buyingPrice,
-					sellingPrice,
-					image: image.filename,
-				});
-
-				saveDrink(newDrink)
-					.then(({ drinkCode }) => {
-						req.flash(
-							"success_msg",
-							`Drink: ${drinkCode} information saved successfully!`,
-						);
-						res.redirect("/admin/add-bar-drink");
-					})
-					.catch((err) => {
-						// console.log({err})
-						req.flash(
-							"error_msg",
-							`An error occurred while saving the drink information...`,
-						);
-						res.redirect("/admin/add-bar-drink");
-					});
-			}
+		return res.status(400).json({
+			success: false,
+			data: errors,
 		});
 	}
+
+	if (!mimetype || mimetype.split("/")[0] !== "image") {
+		errors = { message: "Only images are allowed" };
+
+		return res.status(400).json({
+			success: false,
+			data: errors,
+		});
+	}
+
+	if (size > 10485760) {
+		errors = { message: "Image must be less than 10MB" };
+		return res.status(400).json({
+			success: false,
+			data: errors,
+		});
+	}
+
+	if (
+		typeOfDrink !== "spirit" &&
+		typeOfDrink !== "beer" &&
+		typeOfDrink !== "rtd" &&
+		typeOfDrink !== "wine" &&
+		typeOfDrink !== "water"
+	) {
+		errors = {
+			message: "Types of drinks accepted: spirit, beer, rtd, wine or water",
+		};
+		return res.status(400).json({
+			success: false,
+			data: errors,
+		});
+	}
+
+	if (uom !== "bottles" && uom !== "crates") {
+		errors = {
+			message: "Units of measurement(uom) accepted: bottles or crates",
+		};
+		return res.status(400).json({
+			success: false,
+			data: errors,
+		});
+	}
+
+	// Check if the drink code exists in the database
+	const drinkFound = await searchDrink(drinkCode);
+	console.log("> Searched drink: ", drinkFound);
+
+	if (drinkFound !== null) {
+		errors = { message: `Drink code already exists!` };
+		return res.status(500).json({
+			success: false,
+			data: errors,
+		});
+	}
+
+	const imageUrl = path;
+
+	const newDrink = new Drink({
+		drinkName,
+		drinkCode,
+		typeOfDrink,
+		uom,
+		buyingPrice,
+		sellingPrice,
+		imageUrl,
+	});
+	console.log({ newDrink });
+
+	saveDrink(newDrink)
+		.then((doc) => {
+			res.status(200).json({
+				success: true,
+				data: {
+					message: `Drink: ${doc.drinkCode} created successfully!`,
+				},
+			});
+		})
+		.catch((err) => {
+			console.log({ err });
+			return next(createError(500, "Error saving drink information"));
+		});
 };
 
 // ______________________________________
@@ -123,26 +173,17 @@ exports.postAddBarDrinkPanel = (req, res) => {
 // ______________________________________
 
 // Bar purchases | GET
-exports.getBarPurchasesPanel = (req, res) => {
-	// Fetching All Bar Purchases
-	fetchBarPurchases()
-		.then((purchases) => {
-			// render the page
-			res.render("admin/barPurchases", {
-				purchases,
-				user: req.user,
-				title: "Bar Purchases",
-				layout: "./layouts/adminLayout.ejs",
-			});
+exports.getBarPurchases = async (req, res, next) => {
+	try {
+		// Fetching All Bar Purchases
+		const purchases = await fetchBarPurchases();
+		res.status(200).json({
+			success: true,
+			data: {purchases}
 		})
-		.catch((err) => {
-			// render the page
-			res.render("admin/barPurchases", {
-				user: req.user,
-				title: "Bar Purchases",
-				layout: "./layouts/adminLayout.ejs",
-			});
-		});
+	} catch (err) {
+		return next(createError(500, "Error fetching bar purchases"))
+	}
 };
 
 // Bar purchases - Add Bar Purchases Form | GET

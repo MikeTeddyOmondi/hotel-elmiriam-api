@@ -5,7 +5,8 @@ const router = require("./routes/routes.js");
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
 
-const { DB_URL, PORT } = require("./config/config.js");
+const { DB_URL, PORT, NODE_ENV } = require("./config/config.js");
+const { verifyStaff } = require("./utils/verifyToken");
 
 mongoose
 	.connect(DB_URL, {
@@ -29,13 +30,20 @@ mongoose
 			}),
 		);
 
-		// routes(app);
-		app.use("/api/v1", router);
-
-		// Logs | Routes
-		process.env.NODE_ENV === "production"
+		// Logs
+		NODE_ENV === "production"
 			? app.use(morgan("common"))
 			: app.use(morgan("dev"));
+
+		// routes(app);
+		app.use("/api/v1", router);
+		app.use("/", verifyStaff, (req, res) => {
+			res.status(200).json({
+				success: true,
+				message: "Bar API",
+				description: "Bar API | Version 1",
+			});
+		});
 
 		// Error Middleware
 		app.use((err, req, res, next) => {
@@ -44,12 +52,14 @@ mongoose
 			return res.status(errorStatus).json({
 				success: false,
 				status: errorStatus,
-				message: errorMessage,
+				data: {
+					message: errorMessage,
+				},
 				stack: err.stack,
 			});
 		});
 
 		app.listen(PORT, () => {
-			console.log(`> Bar service running on http://localhost:${PORT}`);
+			console.log(`> Bar service running: http://localhost:${PORT}`);
 		});
 	});

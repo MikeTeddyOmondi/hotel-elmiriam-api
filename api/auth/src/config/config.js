@@ -3,7 +3,8 @@ require("dotenv").config({
 	debug: process.env.NODE_ENV === "development" ? true : false,
 });
 
-const { REFRESH_SECRET, ACCESS_SECRET, DB_URL, PORT, KID } = process.env;
+const { REFRESH_SECRET, ACCESS_SECRET, DB_URL, PORT, KID, NODE_ENV } =
+	process.env;
 
 module.exports = {
 	REFRESH_SECRET,
@@ -11,4 +12,5 @@ module.exports = {
 	DB_URL,
 	PORT,
 	KID,
+	NODE_ENV,
 };

@@ -6,6 +6,16 @@ const UserSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 		},
+		firstname: {
+			type: String,
+			required: false,
+			default: "",
+		},
+		lastname: {
+			type: String,
+			required: false,
+			default: "",
+		},
 		email: {
 			type: String,
 			required: true,
@@ -13,6 +23,37 @@ const UserSchema = new mongoose.Schema(
 		password: {
 			type: String,
 			required: true,
+		},
+		id_number: {
+			type: String,
+			required: true,
+			unique: true,
+		},
+		phone_number: {
+			type: Number,
+			required: false,
+		},
+		userType: {
+			type: String,
+			enum: ["customer", "staff", "management"],
+			unique: true,
+			required: true,
+		},
+		isAdmin: {
+			type: Boolean,
+			default: false,
+		},
+		isActive: {
+			type: Boolean,
+			default: false,
+		},
+		isVerified: {
+			type: Boolean,
+			default: false,
+		},
+		resetLink: {
+			type: String,
+			default: "",
 		},
 	},
 	{ timestamps: true },

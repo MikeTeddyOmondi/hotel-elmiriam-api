@@ -10,11 +10,11 @@ const {
 	Register,
 } = require("../controllers/auth.js");
 
-router.get("/api/v1", ApiInfo);
-router.post("/api/v1/register", Register);
-router.post("/api/v1/login", Login);
-router.get("/api/v1/user", AuthenticatedUser);
-router.post("/api/v1/refresh", Refresh);
-router.post("/api/v1/logout", Logout);
+router.get("/", ApiInfo);
+router.post("/register", Register);
+router.post("/login", Login);
+router.get("/user", AuthenticatedUser);
+router.post("/refresh", Refresh);
+router.post("/logout", Logout);
 
 module.exports = router;

@@ -8,16 +8,18 @@ const DrinkSchema = new mongoose.Schema(
 		},
 		drinkCode: {
 			type: String,
-			required: true,
 			unique: true,
+			required: true,
 		},
 		typeOfDrink: {
 			type: String,
+			enum: ["spirit", "beer", "rtd", "wine", "water"],
 			required: true,
 		},
 		uom: {
 			type: String,
-			required: true,
+			enum: ["bottles", "crates"],
+			required: true
 		},
 		buyingPrice: {
 			type: Number,
@@ -37,7 +39,7 @@ const DrinkSchema = new mongoose.Schema(
 		},
 		imageUrl: {
 			type: String,
-			default: "drink_image.jpg",
+			required: true,
 		},
 	},
 	{ timestamps: true },

@@ -3,7 +3,7 @@ const BarPurchase = require("../models/BarPurchase");
 const BarSale = require("../models/BarSale");
 const Drink = require("../models/Drink");
 
-// Bar Service 
+// Bar Service
 module.exports = {
 	saveDrink: async (drink) => {
 		// Logic here
@@ -14,7 +14,7 @@ module.exports = {
 			uom,
 			buyingPrice,
 			sellingPrice,
-			image,
+			imageUrl,
 		} = drink;
 
 		let newDrink = new Drink({
@@ -24,7 +24,7 @@ module.exports = {
 			uom,
 			buyingPrice,
 			sellingPrice,
-			image,
+			imageUrl,
 		});
 
 		await newDrink
@@ -43,27 +43,26 @@ module.exports = {
 	},
 	searchDrink: async (drinkCode) => {
 		// Searching for drink given the unique drink code
-		let drink = {};
+		let drink;
 
-		await Drink.findOne({ drinkCode: String(drinkCode) })
-			.then((drinkFound) => {
-				if (drinkFound) {
-					console.log(`> Drink Found: ${drinkFound._id}`);
-					return (drink = drinkFound);
-				}
-				return (drink = {});
-			})
-			.catch((err) => {
-				console.log(
-					`> [Bar Service] An error occurred while searching for that drink (${drinkCode}) - ${err}`,
-				);
-				return err;
+		try {
+			const drinkExists = await Drink.findOne({
+				drinkCode: String(drinkCode),
 			});
-		return drink;
+
+			drinkExists ? (drink = drinkExists) : (drink = null);
+			console.log(`> Drink Found: ${drinkExists}`);
+			return drink;
+		} catch (err) {
+			console.log(
+				`> [Bar Service] An error occurred while searching for that drink (${drinkCode}) - ${err}`,
+			);
+			return (drink = null);
+		}
 	},
 	findDrink: async (objectID) => {
-		// 		// Searching for drink given the unique Object ID
-		let customer;
+		// Searching for drink given the unique Object ID
+		let drink;
 
 		await Drink.findOne({ _id: objectID })
 			.then((drinkFound) => {
@@ -74,14 +73,14 @@ module.exports = {
 				console.log(
 					`> [Bar Service] An error occurred while finding the single drink - ${err.message}`,
 				);
-				return err;
+				drink = null;
 			});
 
-		return customer;
+		return drink;
 	},
 	fetchAllDrinks: async () => {
 		// Logic here
-		let allDrinks;
+		let allDrinks = {};
 
 		await Drink.find({})
 			.then((drinks) => {
@@ -92,7 +91,7 @@ module.exports = {
 				console.log(
 					`> [Bar Service] An error occurred while fetching data - ${err.message}`,
 				);
-				return err;
+				return (allDrinks = {});
 			});
 
 		return allDrinks;
@@ -137,8 +136,8 @@ module.exports = {
 				console.log(
 					`> [Bar Service] An error occurred while fetching data - ${err.message}`,
 				);
-				allPurchases = {};
-				return err;
+
+				return (allPurchases = {});
 			});
 
 		return allPurchases;

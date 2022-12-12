@@ -31,6 +31,7 @@ exports.ApiInfo = async (req, res, next) => {
 		return res.status(200).json({
 			success: true,
 			message: "Hotel API",
+			description: "Hotel API | Version 1",
 		});
 	} catch (error) {
 		next(error);
@@ -234,6 +235,24 @@ exports.addBookings = async (req, res, next) => {
 		check_out_date,
 	} = req.body;
 
+	const { access_token } = req;
+	let currentUser = {};
+
+	const resp = await fetch("http://0.0.0.0:8000/api/v1/user", {
+		method: "get",
+		headers: {
+			authorization: `Bearer ${access_token}`,
+		},
+	});
+	const { success, data } = await resp.json();
+
+	if (!success) {
+		return currentUser;
+	}
+	const { user } = data;
+	currentUser = { ...user };
+	console.log(`> currentUser: ${currentUser._id}`);
+
 	// Search for customer with provided ID number
 	let customerFound = await searchCustomer(customerIdNumber);
 
@@ -336,7 +355,7 @@ exports.addBookings = async (req, res, next) => {
 				}
 			} catch (error) {
 				console.log(error);
-				return next(createError(500, `Error: error.message`));
+				return next(createError(500, `Error: ${error.message}`));
 			}
 		} else {
 			return next(createError(500, "Room capacity exceeded"));
@@ -582,7 +601,7 @@ exports.fetchOneRoom = async (req, res, next) => {
 	}
 };
 
-// READ One Room | GET - Using Room Number 
+// READ One Room | GET - Using Room Number
 exports.searchRoom = async (req, res, next) => {
 	// try {
 	// 	const rooms = await Room.find({roomNumbers.number});

@@ -7,6 +7,7 @@ require("dotenv").config({
 });
 
 const {
+	NODE_ENV,
 	REFRESH_SECRET,
 	ACCESS_SECRET,
 	DB_URL,
@@ -24,4 +25,5 @@ module.exports = {
 	CLOUDINARY_CLOUDNAME,
 	CLOUDINARY_API_KEY,
 	CLOUDINARY_API_SECRET,
+	NODE_ENV,
 };

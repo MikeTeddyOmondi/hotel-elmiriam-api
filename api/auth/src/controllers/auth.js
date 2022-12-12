@@ -10,19 +10,34 @@ exports.ApiInfo = async (req, res) => {
 	return res.status(200).json({
 		success: true,
 		message: "Auth API",
+		description: "Auth API | Version 1",
 	});
 };
 
 exports.Register = async (req, res) => {
-	const { username, email, password } = req.body;
+	const { username, email, id_number, password, userType } = req.body;
 
-	const userExist = await User.findOne({ email });
+	if (!username || !email || !password || !id_number || !userType) {
+		return res
+			.status(500)
+			.json({ success: false, message: `Please enter all fields!` });
+	}
+
+	const userExists = await User.findOne({ email });
+	const idNumberExists = await User.findOne({ id_number });
 	const usernameTaken = await User.findOne({ username });
 
-	if (userExist) {
+	if (userExists) {
 		return res.status(500).json({
 			success: false,
 			message: "User already exists!",
+		});
+	}
+
+	if (idNumberExists) {
+		return res.status(500).json({
+			success: false,
+			message: "ID number already exists!",
 		});
 	}
 
@@ -37,15 +52,18 @@ exports.Register = async (req, res) => {
 		username,
 		email,
 		password: await bcryptjs.hash(password, 12),
+		id_number,
+		userType,
 	});
 
 	user
 		.save()
 		.then((doc) => {
-			const { password, ...data } = doc._doc;
+			const { password, isAdmin, userType, ...data } = doc._doc;
 			res.status(201).json({ success: true, data: { user: data._id } });
 		})
 		.catch((err) => {
+			console.log({ err });
 			return res
 				.status(500)
 				.json({ success: false, message: `Error saving user!` });
@@ -64,7 +82,8 @@ exports.Login = async (req, res) => {
 		});
 	}
 
-	if (!bcryptjs.compare(password, user.password)) {
+	const isCorrect = await bcryptjs.compare(password, user.password);
+	if (!isCorrect) {
 		return res.status(400).json({
 			success: false,
 			message: "Invalid credentials!",
@@ -74,6 +93,8 @@ exports.Login = async (req, res) => {
 	const refreshToken = sign(
 		{
 			id: user._id,
+			userType: user.userType,
+			isAdmin: user.isAdmin,
 		},
 		REFRESH_SECRET,
 		{ expiresIn: "1w", header: { kid: KID } },
@@ -103,6 +124,8 @@ exports.Login = async (req, res) => {
 			const access_token = sign(
 				{
 					id: user._id,
+					userType: user.userType,
+					isAdmin: user.isAdmin,
 				},
 				ACCESS_SECRET,
 				{ expiresIn: "30m", header: { kid: KID } },
@@ -126,21 +149,53 @@ exports.Login = async (req, res) => {
 
 exports.AuthenticatedUser = async (req, res) => {
 	try {
-		const accessToken = req.header("Authorization")?.split(" ")[1] || "";
-
-		const payload = verify(accessToken, ACCESS_SECRET);
-
-		if (!payload) {
+		const reqHeaders = req.headers["authorization"];
+		if (!reqHeaders) {
 			return res.status(401).send({
-				message: "Unauthenticated!",
+				success: false,
+				data: {
+					message: "Unauthenticated!",
+				},
 			});
 		}
 
-		const user = await User.findOne(payload._id);
+		const accessToken = reqHeaders.split(" ")[1];
+		if (!accessToken) {
+			return res.status(401).send({
+				success: false,
+				data: {
+					message: "Unauthenticated!",
+				},
+			});
+		}
+
+		// const payload = verify(accessToken, ACCESS_SECRET);
+		let payload;
+
+		verify(accessToken, ACCESS_SECRET, (err, data) => {
+			if (err) {
+				throw Error("Invalid token");
+			}
+			payload = data;
+		});
+
+		if (!payload) {
+			return res.status(403).send({
+				success: false,
+				data: {
+					message: "Invalid token",
+				},
+			});
+		}
+
+		const user = await User.findOne({ _id: payload.id });
 
 		if (!user) {
-			return res.status(401).send({
-				message: "Unauthenticated!",
+			return res.status(403).send({
+				success: false,
+				data: {
+					message: "Invalid token!",
+				},
 			});
 		}
 
@@ -153,9 +208,11 @@ exports.AuthenticatedUser = async (req, res) => {
 			},
 		});
 	} catch (err) {
-		return res.status(401).send({
+		return res.status(500).send({
 			success: false,
-			message: "Unauthenticated!",
+			data: {
+				message: `${err.message}`,
+			},
 		});
 	}
 };
@@ -193,9 +250,11 @@ exports.Refresh = async (req, res) => {
 		const token = sign(
 			{
 				id: payload.id,
+				userType: payload.userType,
+				isAdmin: payload.isAdmin,
 			},
 			ACCESS_SECRET,
-			{ expiresIn: "90s" },
+			{ expiresIn: "30m", header: { kid: KID } },
 		);
 
 		res.status(200).json({
