@@ -178,7 +178,7 @@ exports.getAllBookings = async (req, res) => {
 	}
 };
 
-// Room Booking List View | Search Customer by ID Number in query paramas | GET
+// Room Booking List View | Search Customer by ID Number in query params | GET
 exports.searchCustomer = async (req, res) => {
 	let errors = {};
 	const { idnumber } = req.params;
@@ -303,6 +303,9 @@ exports.addBookings = async (req, res, next) => {
 
 	const totalPeople = parseInt(numberKids) + parseInt(numberAdults);
 	console.log("> totalPeople: ", totalPeople);
+
+	const allBookingsFound = await fetchAllBookings()
+	// Check if the customer has not yet booked
 
 	// If room is available proceed to reservation
 	if (isRoomAvailable) {
@@ -560,7 +563,15 @@ exports.fetchAllRooms = (req, res) => {
 exports.allRoomTypes = async (req, res, next) => {
 	// Fetching All Room Types
 	try {
-		const roomTypes = await RoomType.find({});
+		const roomTypes = await RoomType.find({})
+			.populate({ path: "rooms", model: "Room" })
+			.populate({
+				path: "reservations",
+				populate: {
+					path: "bookingRef",
+					model: "Booking",
+				},
+			});
 
 		res.status(200).json({
 			success: true,

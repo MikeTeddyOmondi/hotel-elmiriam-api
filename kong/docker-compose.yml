@@ -2,10 +2,10 @@ version: '3.6'
 
 services:
   gateway:
-    image: kong:3.0.1
+    image: kong:3.0.2
     container_name: kong-gateway
     volumes:
-      - $(pwd):/kong/declarative/kong.yml
+      - ./kong.yml:/kong/declarative/kong.yml
     environment:
       - KONG_DATABASE=${KONG_DATABASE}
       - KONG_DECLARATIVE_CONFIG=/kong/declarative/kong.yml

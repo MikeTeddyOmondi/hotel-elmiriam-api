@@ -17,7 +17,8 @@ const CustomerSchema = new mongoose.Schema(
 		},
 		email: {
 			type: String,
-			default: "",
+			required: true,
+			unique: true,
 		},
 		phone_number: {
 			type: Number,

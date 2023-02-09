@@ -24,7 +24,6 @@ const verifyToken = (req, res, next) => {
 };
 
 const verifyUser = (req, res, next) => {
-	
 	const reqHeaders = req.headers["authorization"];
 
 	if (!reqHeaders) {
@@ -39,7 +38,9 @@ const verifyUser = (req, res, next) => {
 	jwt.verify(token, ACCESS_SECRET, (err, user) => {
 		if (err) return next(createError(403, "Invalid token"));
 
-		if (req.user.id === req.params.id || req.user.isAdmin) {
+		if (user.id === req.params.id || user.isAdmin) {
+			req.user = user;
+			req.access_token = token;
 			next();
 		} else {
 			return next(createError(403, "Unauthorized request"));
@@ -62,7 +63,9 @@ const verifyStaff = (req, res, next) => {
 	jwt.verify(token, ACCESS_SECRET, (err, user) => {
 		if (err) return next(createError(403, "Invalid token"));
 
-		if (req.user.userType === "staff" || req.user.isAdmin) {
+		if (user.userType === "staff" || user.isAdmin) {
+			req.user = user;
+			req.access_token = token;
 			next();
 		} else {
 			return next(createError(403, "Unauthorized request"));
@@ -78,6 +81,7 @@ const verifyAdmin = (req, res, next) => {
 	}
 
 	const token = reqHeaders.split(" ")[1];
+
 	if (!token) {
 		return next(createError(401, "Unauthenticated request"));
 	}

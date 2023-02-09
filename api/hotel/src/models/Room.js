@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const RoomSchema = new mongoose.Schema(
 	{
-		number: { type: String, unique: true },
+		number: { type: String, required: true, unique: true },
 		isBooked: { type: Boolean, default: false },
 	},
 	{ timestamps: true },

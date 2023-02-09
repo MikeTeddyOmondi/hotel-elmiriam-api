@@ -7,6 +7,8 @@ const cookieParser = require("cookie-parser");
 
 const { DB_URL, PORT, NODE_ENV } = require("./config/config.js");
 
+mongoose.set("strictQuery", false);
+
 mongoose
 	.connect(DB_URL, {
 		useNewUrlParser: true,

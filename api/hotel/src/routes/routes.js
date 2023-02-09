@@ -4,6 +4,7 @@ const router = express.Router();
 const {
 	verifyToken,
 	verifyUser,
+	verifyStaff,
 	verifyAdmin,
 } = require("../utils/verifyToken");
 
@@ -26,10 +27,10 @@ const {
 router.get("/", verifyToken, ApiInfo);
 
 // READ ALL CUSTOMERS
-router.get("/customers", verifyUser, getAllCustomers);
+router.get("/customers", verifyStaff, getAllCustomers);
 
 // CREATE NEW CUSTOMER
-router.post("/customers", verifyUser, addCustomer);
+router.post("/customers", verifyToken, addCustomer);
 
 // READ CUSTOMER | Search - Requires: idnumber
 router.get("/customers/:idnumber", verifyUser, searchCustomer);

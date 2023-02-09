@@ -3,7 +3,7 @@ version: "3.6"
 services:
   auth:
     container_name: hotel-elmiriam-auth-svc
-    image: ranckosolutionsinc/auth-service-0.1.0
+    image: ranckosolutionsinc/auth-service:0.2.0
     build: ./
     restart: always
     ports:
@@ -19,7 +19,7 @@ services:
 
   mongo:
     container_name: hotel-elmiriam-mongo-db
-    image: mongo
+    image: mongo:4.2
     restart: always
     ports:
       - 27017:27017
