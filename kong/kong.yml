@@ -25,34 +25,34 @@ services:
     routes:
       - name: hotel-service-route
         paths:
-          - /hotel
+          - /restaurant
 
-plugins:
-  - name: jwt
-    service: hotel-service
-    enabled: true
-    config:
-      key_claim_name: kid
-      claims_to_verify:
-        - exp
-  - name: jwt
-    service: bar-service
-    enabled: true
-    config:
-      key_claim_name: kid
-      claims_to_verify:
-        - exp
-  - name: jwt
-    service: restaurant-service
-    enabled: true
-    config:
-      key_claim_name: kid
-      claims_to_verify:
-        - exp
+# plugins:
+#   - name: jwt
+#     service: hotel-service
+#     enabled: true
+#     config:
+#       key_claim_name: kid
+#       claims_to_verify:
+#         - exp
+#   - name: jwt
+#     service: bar-service
+#     enabled: true
+#     config:
+#       key_claim_name: kid
+#       claims_to_verify:
+#         - exp
+#   - name: jwt
+#     service: restaurant-service
+#     enabled: true
+#     config:
+#       key_claim_name: kid
+#       claims_to_verify:
+#         - exp
 
-consumers:
-  - username: auth_issuer
+# consumers:
+#   - username: auth_issuer
 
-jwt_secrets:
-  - consumer: auth_issuer
-    secret: "aSDF234EFDGFHDGR&234234234SDSFGD34732"
+# jwt_secrets:
+#   - consumer: auth_issuer
+#     secret: "aSDF234EFDGFHDGR&234234234SDSFGD34732"
