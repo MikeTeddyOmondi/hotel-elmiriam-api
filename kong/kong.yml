@@ -1,58 +1,78 @@
-_format_version: "2.1"
+_format_version: "1.1"
 _transform: true
 
 services:
-  - name: auth-service
-    url: http://localhost:8000
+  - host: 127.0.0.1
+    port: 8000
+    name: auth-service
+    path: /api/v1/
     routes:
       - name: auth-service-route
         paths:
           - /auth
-  - name: hotel-service
-    url: http://localhost:8003
-    routes:
-      - name: hotel-service-route
-        paths:
-          - /hotel
-  - name: bar-service
-    url: http://localhost:8004
-    routes:
-      - name: bar-service-route
-        paths:
-          - /bar
-  - name: restaurant-service
-    url: http://localhost:8005
-    routes:
-      - name: hotel-service-route
-        paths:
-          - /hotel
+        strip_path: true    
 
-plugins:
-  - name: jwt
-    service: hotel-service
-    enabled: true
-    config:
-      key_claim_name: kid
-      claims_to_verify:
-        - exp
-  - name: jwt
-    service: bar-service
-    enabled: true
-    config:
-      key_claim_name: kid
-      claims_to_verify:
-        - exp
-  - name: jwt
-    service: restaurant-service
-    enabled: true
-    config:
-      key_claim_name: kid
-      claims_to_verify:
-        - exp
+    # - name: auth-service
+    #   url: http://localhost:8000
+    #   routes:
+    #     - name: auth-service-route
+    #       paths:
+    #         - /auth
+    # - name: hotel-service
+    #   url: http://localhost:8003
+    #   routes:
+    #     - name: hotel-service-route
+    #       paths:
+    #         - /api/v1
+    #       methods:
+    #         - GET
+    #         - POST
+    #         - PUT
+    #         - DELETE
+    #       headers:
+    #         accept:
+    #           - application/json
+    #         # authorization:
+    #         # - Bearer
+    # - name: bar-service
+    #   url: http://localhost:8004
+    #   routes:
+    #     - name: bar-service-route
+    #       paths:
+    #         - /bar
+    # - name: restaurant-service
+    #   url: http://localhost:8005
+    #   routes:
+    #     - name: hotel-service-route
+    #       paths:
+    #         - /restaurant
+#plugins:
+#  - name: jwt
+#    service: hotel-service
+#    enabled: true
+#    config:
+#      key_claim_name: kid
+#      claims_to_verify:
+#        - exp
+#  - name: jwt
+#    service: bar-service
+#    enabled: true
+#    config:
+#      key_claim_name: kid
+#      claims_to_verify:
+#        - exp
+#  - name: jwt
+#    service: restaurant-service
+#    enabled: true
+#    config:
+#      key_claim_name: kid
+#      claims_to_verify:
+#        - exp
 
-consumers:
-  - username: auth_issuer
+#consumers:
+#  - username: auth_issuer
 
-jwt_secrets:
-  - consumer: auth_issuer
-    secret: "aSDF234EFDGFHDGR&234234234SDSFGD34732"
+#jwt_secrets:
+#  - consumer: auth_issuer
+#    secret: "aSDF234EFDGFHDGR&234234234SDSFGD34732"
+

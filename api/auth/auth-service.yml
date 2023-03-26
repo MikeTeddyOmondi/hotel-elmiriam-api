@@ -13,7 +13,7 @@ services:
     env_file:
       - ./src/.env
     networks:
-      - hotel-elmiriam-network
+      - hotel-elmiriam-network 
     depends_on:
       - mongo
 
@@ -21,15 +21,25 @@ services:
     container_name: hotel-elmiriam-mongo-db
     image: mongo:4.2
     restart: always
-    ports:
-      - 27017:27017
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    # ports:
+    #  - 27017:27017
+    # environment:
+    #  - MONGO_INITDB_DATABASE=${MONGO_INITDB_ROOT_DATABASE}     
+    #  - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+    #  - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
     volumes:
       - hotel-elmiriam-mongodb-data:/data/db
+    #  - ./mongo-entrypoint/:/docker-entrypoint-initdb.d/"  
     networks:
       - hotel-elmiriam-network
+
+  mongo-express:
+    container_name: hotel-elmiriam-mongo-compass       
+    image: mongo-express:latest
+    ports: 
+      - 8081:8081    
+    networks:
+      - hotel-elmiriam-network     
 
 volumes:
   hotel-elmiriam-mongodb-data:
@@ -38,3 +48,4 @@ networks:
   hotel-elmiriam-network:
     name: hotel-elmiriam
     driver: bridge
+
