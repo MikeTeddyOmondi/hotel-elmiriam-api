@@ -1,0 +1,15 @@
+version: '3.6'
+
+services:
+  gateway:
+    container_name: hotel-elmiriam-api-gateway
+    image: ranckosolutionscinc/hotel-elmiriam-api-gateway:v1
+    ports:
+      - 8009:8009
+    networks:
+      - hotel-elmiriam-network
+
+networks:
+  hotel-elmiriam-network:
+    name: hotel-elmiriam
+    driver: bridge

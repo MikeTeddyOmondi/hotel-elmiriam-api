@@ -1,0 +1,92 @@
+{
+    "$schema": "https://www.krakend.io/schema/v3.json",
+    "version": 3,
+    "name": "hotel-elmiriam-api-gateway",
+    "timeout": "30000ms",
+    "cache_ttl": "3600s",
+    "port": 8009,
+    "extra_config": {
+        "router": {
+            "return_error_msg": true
+        }
+    },
+    "endpoints": [
+        {
+            "endpoint": "/api/auth/version",
+            "method": "GET",
+            "output_encoding": "json",
+            "input_headers": ["*"],
+            "backend": [
+                {
+                    "url_pattern": "/api/v1",
+                    "method": "GET",
+                    "encoding": "json",
+                    "sd": "static",
+                    "host": [
+                        "http://auth:8000"
+                    ]
+                }
+            ]
+        },
+        {
+            "endpoint": "/api/auth/register",
+            "method": "POST",
+            "output_encoding": "no-op",
+            "input_headers": ["*"],
+            "input_query_strings": [],
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/register",
+                    "method": "POST",
+                    "encoding": "no-op",
+                    "sd": "static",
+                    "host": [
+                        "http://auth:8000"
+                    ],
+                    "disable_host_sanitize": false,
+                    "target": "",
+                    "is_collection": false,
+                    "group": "",
+                    "mapping": {}
+                }
+            ],
+            "extra_config": {
+                "qos/ratelimit/router": {
+                    "max_rate": 15,
+                    "client_max_rate": 5,
+                    "strategy": "ip"
+                }
+            }
+        },
+        {
+            "endpoint": "/api/auth/login",
+            "method": "POST",
+            "output_encoding": "no-op",
+            "input_headers": ["*"],
+            "input_query_strings": [],
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/login",
+                    "method": "POST",
+                    "encoding": "no-op",
+                    "sd": "static",
+                    "host": [
+                        "http://auth:8000"
+                    ],
+                    "disable_host_sanitize": false,
+                    "target": "",
+                    "is_collection": false,
+                    "group": "",
+                    "mapping": {}
+                }
+            ],
+            "extra_config": {
+                "qos/ratelimit/router": {
+                    "max_rate": 15,
+                    "client_max_rate": 5,
+                    "strategy": "ip"
+                }
+            }
+        }
+    ]
+}
