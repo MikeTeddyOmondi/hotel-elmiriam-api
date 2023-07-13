@@ -60,7 +60,8 @@ exports.getOneBarDrink = async (req, res, next) => {
 
 // Bar Drink | Menu Updates | POST
 exports.addBarDrinks = async (req, res, next) => {
-	const bodyData = JSON.parse(req.body.data);
+	console.log(req.body)
+	const bodyData = JSON.parse(req.body);
 	const { drinkName, drinkCode, typeOfDrink, uom, buyingPrice, sellingPrice } =
 		bodyData;
 
