@@ -60,6 +60,6 @@ mongoose
 		});
 
 		app.listen(PORT, () => {
-			console.log(`> Service running: http://0.0.0.0:${PORT}`);
+			console.log(`> Hotel service running: http://0.0.0.0:${PORT}`);
 		});
 	});
