@@ -62,18 +62,18 @@ module.exports = {
 	},
 	findDrink: async (objectID) => {
 		// Searching for drink given the unique Object ID
-		let drink;
+		let drink = {};
 
 		await Drink.findOne({ _id: objectID })
 			.then((drinkFound) => {
 				console.log(`> Drink found: ${drinkFound._id}`);
-				drink = drinkFound;
+				drink = {...drinkFound};
 			})
 			.catch((err) => {
 				console.log(
 					`> [Bar Service] An error occurred while finding the single drink - ${err.message}`,
 				);
-				drink = null;
+				drink = {};
 			});
 
 		return drink;
@@ -124,20 +124,20 @@ module.exports = {
 	},
 	fetchBarPurchases: async () => {
 		// Logic here
-		let allPurchases;
+		let allPurchases = [];
 
 		await BarPurchase.find({})
 			.populate("product")
 			.then((purchasesMade) => {
 				// console.log(purchasesMade);
-				allPurchases = purchasesMade;
+				allPurchases = [...purchasesMade];
 			})
 			.catch((err) => {
 				console.log(
 					`> [Bar Service] An error occurred while fetching data - ${err.message}`,
 				);
 
-				return (allPurchases = {});
+				return allPurchases;
 			});
 
 		return allPurchases;

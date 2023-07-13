@@ -28,7 +28,7 @@ router.post("/drinks", verifyAdmin, imageUploads, addBarDrinks);
 
 // Get/Put/Delete | Bar Drinks [ONE]
 router.get("/drinks/:id", verifyAdmin, getOneBarDrink);
-// router.put("/drinks/:id", verifyAdmin, updateOneBarDrink);
+// router.put("/drinks/:id", verifyAdmin, imageUploads, updateOneBarDrink);
 // router.delete("/drinks/:id", verifyAdmin, deleteOneBarDrinks);
 
 // ___________________________________________
@@ -38,9 +38,9 @@ router.get("/purchases", verifyAdmin, getBarPurchases);
 // router.post("/purchases", verifyAdmin, postBarPurchases);
 
 // Get/Put/Delete | Bar Purchases [ONE]
-// router.get("/purchases", verifyAdmin, updateBarPurchases);
-// router.put("/purchases", verifyAdmin, updateBarPurchases);
-// router.delete("/purchases", verifyAdmin, deleteBarPurchases);
+// router.get("/purchases/:id", verifyAdmin, getOneBarPurchase);
+// router.put("/purchases/:id", verifyAdmin, updateOneBarPurchase);
+// router.delete("/purchases/:id", verifyAdmin, deleteOneBarPurchase);
 
 // ___________________________________________
 // // Get/Post/Put/Delete | Bar Sales
@@ -49,8 +49,8 @@ router.get("/purchases", verifyAdmin, getBarPurchases);
 // router.post("/sales", verifyAdmin, postBarSales);
 
 // Get/Put/Delete | Bar Sales [ONE]
-// router.get("/sales", verifyAdmin, getOneBarSale);
-// router.put("/sales", verifyAdmin, updateOneBarSale);
-// router.delete("/sales", verifyAdmin, deleteOneBarSales);
+// router.get("/sales/:id", verifyAdmin, getOneBarSale);
+// router.put("/sales/:id", verifyAdmin, updateOneBarSale);
+// router.delete("/sales/:id", verifyAdmin, deleteOneBarSale);
 
 module.exports = router;

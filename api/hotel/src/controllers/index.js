@@ -11,34 +11,34 @@ const Room = require("../models/Room.js");
 
 // Import Hotel Service
 const {
-	saveCustomer,
-	fetchAllCustomers,
-	fetchBookings,
-	searchCustomer,
-	findCustomer,
-	findRoom,
-	findRoomType,
-	saveBookingAndInvoice,
-	checkRoomAvailability,
-	updateRoomTypeAvailability,
-	updateRoomStatus,
-	fetchOneRoom,
-	fetchAllRooms,
-	checkRoomTypeCapacity,
+  saveCustomer,
+  fetchAllCustomers,
+  fetchBookings,
+  searchCustomer,
+  findCustomer,
+  findRoom,
+  findRoomType,
+  saveBookingAndInvoice,
+  checkRoomAvailability,
+  updateRoomTypeAvailability,
+  updateRoomStatus,
+  fetchOneRoom,
+  fetchAllRooms,
+  checkRoomTypeCapacity,
 } = require("../services/hotel.service");
 
 // const { REFRESH_SECRET, ACCESS_SECRET } = require("../config/config.js");
 
 exports.ApiInfo = async (req, res, next) => {
-	try {
-		return res.status(200).json({
-			success: true,
-			message: "Hotel API",
-			description: "Hotel API | Version 1",
-		});
-	} catch (error) {
-		next(error);
-	}
+  try {
+    return res.status(200).json({
+      success: true,
+      message: "Hotel API",
+      description: "Hotel API | Version 1",
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 // ________________________________________________
@@ -47,119 +47,119 @@ exports.ApiInfo = async (req, res, next) => {
 
 // Add Customers List View | GET
 exports.getAllCustomers = async (req, res, next) => {
-	try {
-		const customers = await fetchAllCustomers();
+  try {
+    const customers = await fetchAllCustomers();
 
-		res.status(200).json({
-			success: true,
-			data: { customers },
-		});
-	} catch (error) {
-		next(error);
-	}
+    res.status(200).json({
+      success: true,
+      data: { customers },
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 // Add Customers | POST
 exports.addCustomer = async (req, res) => {
-	const { firstname, lastname, id_number, phone_number, email } = req.body;
+  const { firstname, lastname, id_number, phone_number, email } = req.body;
 
-	let errors = {};
+  let errors = {};
 
-	if (!firstname || !lastname || !id_number || !email) {
-		errors = { messsage: "Please enter all fields" };
+  if (!firstname || !lastname || !id_number || !email) {
+    errors = { messsage: "Please enter all fields" };
 
-		return res.status(500).json({
-			success: false,
-			data: errors,
-		});
-	}
+    return res.status(500).json({
+      success: false,
+      data: errors,
+    });
+  }
 
-	if (firstname.length < 3) {
-		errors = {
-			messsage: "Firstname must be at least 3 characters long!",
-		};
+  if (firstname.length < 3) {
+    errors = {
+      messsage: "Firstname must be at least 3 characters long!",
+    };
 
-		return res.status(500).json({
-			success: false,
-			data: errors,
-		});
-	}
-	if (lastname.length < 3) {
-		errors = { messsage: "Lastname must be at least 3 characters long!" };
+    return res.status(500).json({
+      success: false,
+      data: errors,
+    });
+  }
+  if (lastname.length < 3) {
+    errors = { messsage: "Lastname must be at least 3 characters long!" };
 
-		return res.status(500).json({
-			success: false,
-			data: errors,
-		});
-	}
+    return res.status(500).json({
+      success: false,
+      data: errors,
+    });
+  }
 
-	if (errors.length > 0) {
-		return res.status(500).json({
-			success: false,
-			data: errors,
-		});
-	} else {
-		// Check if the provided ID number exists in the database
-		Customer.findOne({ id_number }).then((idNumberExists) => {
-			if (idNumberExists) {
-				errors = {
-					messsage: `ID number already exists!`,
-				};
+  if (errors.length > 0) {
+    return res.status(500).json({
+      success: false,
+      data: errors,
+    });
+  } else {
+    // Check if the provided ID number exists in the database
+    Customer.findOne({ id_number }).then((idNumberExists) => {
+      if (idNumberExists) {
+        errors = {
+          messsage: `ID number already exists!`,
+        };
 
-				return res.status(500).json({
-					success: false,
-					data: errors,
-				});
-			} else {
-				// Check if the provided email exists in the database
-				Customer.findOne({ email }).then((emailExists) => {
-					if (emailExists) {
-						errors = {
-							messsage: `Email already exists!`,
-						};
+        return res.status(500).json({
+          success: false,
+          data: errors,
+        });
+      } else {
+        // Check if the provided email exists in the database
+        Customer.findOne({ email }).then((emailExists) => {
+          if (emailExists) {
+            errors = {
+              messsage: `Email already exists!`,
+            };
 
-						return res.status(500).json({
-							success: false,
-							data: errors,
-						});
-					} else {
-						// Create a customer details | Object
-						let customerDetails = {
-							firstname,
-							lastname,
-							id_number,
-							phone_number,
-							email,
-						};
-						// Save the customer details
-						saveCustomer(customerDetails)
-							.then((id) => {
-								console.log(`> [CREATED] Customer: ${id}`);
+            return res.status(500).json({
+              success: false,
+              data: errors,
+            });
+          } else {
+            // Create a customer details | Object
+            let customerDetails = {
+              firstname,
+              lastname,
+              id_number,
+              phone_number,
+              email,
+            };
+            // Save the customer details
+            saveCustomer(customerDetails)
+              .then((id) => {
+                console.log(`> [CREATED] Customer: ${id}`);
 
-								res.status(201).json({
-									success: true,
-									data: {
-										customer: id,
-									},
-								});
-							})
-							.catch((err) => {
-								console.log(`> [Controller] error - ${err}`);
+                res.status(201).json({
+                  success: true,
+                  data: {
+                    customer: id,
+                  },
+                });
+              })
+              .catch((err) => {
+                console.log(`> [Controller] error - ${err}`);
 
-								errors = {
-									messsage: `An error occurred while saving!`,
-								};
+                errors = {
+                  messsage: `An error occurred while saving!`,
+                };
 
-								res.status(500).json({
-									success: false,
-									data: errors,
-								});
-							});
-					}
-				});
-			}
-		});
-	}
+                res.status(500).json({
+                  success: false,
+                  data: errors,
+                });
+              });
+          }
+        });
+      }
+    });
+  }
 };
 
 // ________________________________________________
@@ -168,62 +168,62 @@ exports.addCustomer = async (req, res) => {
 
 // Room Booking List View | GET
 exports.getAllBookings = async (req, res) => {
-	// Fetching All Bookings Made
-	try {
-		const bookings = await fetchBookings();
+  // Fetching All Bookings Made
+  try {
+    const bookings = await fetchBookings();
 
-		res.status(200).json({
-			success: true,
-			data: { bookings },
-		});
-	} catch (error) {
-		next(error);
-	}
+    res.status(200).json({
+      success: true,
+      data: { bookings },
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 // Room Booking List View | Search Customer by ID Number in query params | GET
 exports.searchCustomer = async (req, res) => {
-	let errors = {};
-	const { idnumber } = req.params;
+  let errors = {};
+  const { idnumber } = req.params;
 
-	// Search customer with the id
-	await searchCustomer(idnumber)
-		.then((customerFound) => {
-			if (!customerFound) {
-				return res.status(500).json({
-					success: true,
-					data: {
-						msg: "No customer found with that ID number",
-					},
-				});
-			}
-			console.log(`> Customer ID: ${customerFound._id}`);
-			console.log(`> Customer Details: ${customerFound}`);
-			// customerID = customerFound._id;
-			// req.session.customerID = customerID;
+  // Search customer with the id
+  await searchCustomer(idnumber)
+    .then((customerFound) => {
+      if (!customerFound) {
+        return res.status(500).json({
+          success: true,
+          data: {
+            msg: "No customer found with that ID number",
+          },
+        });
+      }
+      console.log(`> Customer ID: ${customerFound._id}`);
+      console.log(`> Customer Details: ${customerFound}`);
+      // customerID = customerFound._id;
+      // req.session.customerID = customerID;
 
-			return res.status(200).json({
-				success: true,
-				data: { customer: customerFound._doc },
-			});
-		})
-		.catch((err) => {
-			console.log(`> [Controller] error - ${err.message}`);
+      return res.status(200).json({
+        success: true,
+        data: { customer: customerFound._doc },
+      });
+    })
+    .catch((err) => {
+      console.log(`> [Controller] error - ${err.message}`);
 
-			// req.flash(
-			// 	"error_msg",
-			// 	`There is no customer with this ID number: ${id_number}...`,
-			// );
+      // req.flash(
+      // 	"error_msg",
+      // 	`There is no customer with this ID number: ${id_number}...`,
+      // );
 
-			// return res.redirect("/admin/bookings/search-customer");
+      // return res.redirect("/admin/bookings/search-customer");
 
-			return res.status(500).json({
-				success: false,
-				data: err,
-			});
-		});
+      return res.status(500).json({
+        success: false,
+        data: err,
+      });
+    });
 
-	// res.redirect("/admin/bookings/booking-details");
+  // res.redirect("/admin/bookings/booking-details");
 };
 
 // Admin Panel - POST | Bookings Details Page
@@ -444,145 +444,167 @@ exports.searchCustomer = async (req, res) => {
 // 	}
 // };
 exports.addBookings = async (req, res, next) => {
-	try {
-		const {
-			customerId,
-			numberAdults,
-			numberKids,
-			roomType,
-			checkInDate,
-			checkOutDate,
-		} = req.body;
+  try {
+    const {
+      customerId,
+      numberAdults,
+      numberKids,
+      roomType,
+      checkInDate,
+      checkOutDate,
+    } = req.body;
 
-		const { access_token } = req;
-		let currentUser = {};
+    const { access_token } = req;
+    let currentUser = {};
 
-		const resp = await fetch("http://0.0.0.0:8000/api/v1/user", {
-			method: "get",
-			headers: {
-				authorization: `Bearer ${access_token}`,
-			},
-		});
-		const { success, data } = await resp.json();
+    const resp = await fetch("http://0.0.0.0:8000/api/v1/user", {
+      method: "get",
+      headers: {
+        authorization: `Bearer ${access_token}`,
+      },
+    });
+    const { success, data } = await resp.json();
 
-		if (!success) {
-			return currentUser;
-		}
-		const { user } = data;
-		currentUser = { ...user };
-		console.log(`> currentUser: ${currentUser._id}`);
+    if (!success) {
+      return next(createError(500, `Session user not found`));
+    }
+    const { user } = data;
+    currentUser = { ...user };
+    console.log(`> currentUser: ${currentUser._id}`);
+    console.log("> Authorized user: ", req.user);
 
-		// Check if the customer exists
-		const customer = await Customer.findOne({ id_number: String(customerId) });
-		if (!customer) {
-			return res.status(404).json({ message: "Customer not found" });
-		}
+    // Check if the customer exists
+    const customer = await Customer.findOne({ id_number: String(customerId) });
+    if (!customer) {
+      return next(createError(404, `Customer not found`));
+    }
 
-		// Check if the room type exists
-		const roomTypeDoc = await RoomType.findOne({ roomType });
-		if (!roomTypeDoc) {
-			return res.status(404).json({ error: "Room type not found" });
-		}
+    // Check if the room type exists
+    const roomTypeDoc = await RoomType.findOne({ roomType });
+    if (!roomTypeDoc) {
+      return next(createError(404, `Room type not found`));
+    }
 
-		// Check if there are available rooms
-		const availableRooms = await Room.find({ isBooked: false });
-		// console.log({ availableRooms });
-		if (availableRooms.length < 1) {
-			return res.status(404).json({ error: "No available rooms" });
-		}
+    // Check if there are available rooms
+    const availableRooms = await Room.find({ isBooked: false });
+    const isRoomTypeAvailable =
+      roomTypeDoc.reservations.bookingRef.length <= roomTypeDoc.rooms.length;
+    console.log({ isRoomTypeAvailable });
+    // console.log({ availableRooms });
+    if (!isRoomTypeAvailable) {
+      return next(createError(500, `No rooms available`));
+    }
 
-		// Select a random available room
-		const roomIndex = Math.floor(Math.random() * availableRooms.length);
-		const room = availableRooms[roomIndex];
-		// console.log({ room });
+    // Select a random available room
+    const roomIndex = Math.floor(Math.random() * availableRooms.length);
+    const room = availableRooms[roomIndex];
+    // console.log({ randomRoomSelected: room });
 
-		// Find the room type based on the random room chosen
-		const { _id } = await RoomType.findOne({ rooms: room._id });
-		const roomTypeFound = _id;
-		console.log({ roomTypeFound });
+    // Find the room type based on the random room chosen
+    const { _id } = await RoomType.findOne({ rooms: room._id });
+    const roomTypeFound = _id;
+    // console.log({ roomTypeFound });
 
-		// Create a new booking
-		const booking = new Booking({
-			customer: customer,
-			numberAdults: numberAdults,
-			numberKids: numberKids,
-			roomType: roomTypeFound,
-			checkInDate: checkInDate,
-			checkOutDate: checkOutDate,
-		});
+    // Create a new booking
+    const booking = new Booking({
+      customer: customer,
+      numberAdults: numberAdults,
+      numberKids: numberKids,
+      roomType: roomTypeFound,
+      checkInDate: checkInDate,
+      checkOutDate: checkOutDate,
+    });
 
-		// Update the random room chosen
-		room.isBooked = true;
-		// await room.save();
-		console.log({ room });
+    // Update the random room chosen
+    room.isBooked = true;
+    await room.save();
+    console.log({ room });
 
-		// Save the booking
-		// await booking.save();
-		console.log({ booking });
+    // Update Room Availability: reservations field in RoomType model
+    const alldates = getDatesInRange(checkInDate, checkOutDate);
+    const hasUpdatedReservations = await updateRoomTypeAvailability(
+      roomTypeFound,
+      alldates,
+      booking._id
+    );
+    // console.log("> UpdatedReservations: ", hasUpdatedReservations);
+    if (!hasUpdatedReservations) {
+      return next(
+        createError(500, `Error occurred while updating room reservations`)
+      );
+    }
 
-		// Create a new invoice
-		const diffinTime = Math.abs(new Date(checkOutDate) - new Date(checkInDate));
-		const diffinDays = Math.ceil(diffinTime / (1000 * 60 * 60 * 24));
-		console.log({ diffinDays });
+    // Save the booking
+    await booking.save();
+    console.log({ booking });
 
-		const subTotalCost = roomTypeDoc.rate * diffinDays;
-		const vat = 0.16 * Number(subTotalCost);
-		const totalCost = subTotalCost + vat;
+    // Create a new invoice
+    const diffinTime = Math.abs(new Date(checkOutDate) - new Date(checkInDate));
+    const diffinDays = Math.ceil(diffinTime / (1000 * 60 * 60 * 24));
+    console.log({ diffinDays });
 
-		const invoice = new Invoice({
-			bookingRef: booking._id,
-			subTotalCost: subTotalCost,
-			vat: vat,
-			totalCost: totalCost,
-		});
+    const subTotalCost =
+      roomTypeDoc.rate *
+      (diffinDays === 0 ? 1 : diffinDays) *
+      (numberAdults + numberKids);
+    const vat = 0.16 * Number(subTotalCost);
+    const totalCost = subTotalCost + vat;
 
-		// await invoice.save();
-		console.log({ invoice });
+    const invoice = new Invoice({
+      bookingRef: booking._id,
+      subTotalCost: subTotalCost,
+      vat: vat,
+      totalCost: totalCost,
+    });
 
-		res.status(201).json({
-			message: "Room booked successfully",
-			data: { booking: booking, room: room, invoice: invoice },
-		});
-	} catch (error) {
-		return next(createError(500, `${error}`));
-	}
+    // Save the invoice
+    await invoice.save();
+    console.log({ invoice });
+
+    res.status(201).json({
+      message: "Room booked successfully",
+      data: { booking: booking, room: room, invoice: invoice },
+    });
+  } catch (error) {
+    return next(createError(500, `${error.message}`));
+  }
 };
 
 // Admin Panel - GET | Bookings Invoice Page
 exports.getBookingInvoice = (req, res) => {
-	const {
-		bookingID,
-		firstname,
-		lastname,
-		phoneNumber,
-		email,
-		roomType,
-		roomRate,
-		numberOccupants,
-		check_in_date,
-		check_out_date,
-		subTotal,
-		VAT,
-		totalCost,
-	} = req.session;
-	res.render("admin/bookingsInvoice", {
-		bookingID,
-		firstname,
-		lastname,
-		phoneNumber,
-		email,
-		roomType,
-		roomRate,
-		numberOccupants,
-		check_in_date,
-		check_out_date,
-		subTotal,
-		VAT,
-		totalCost,
-		user: req.user,
-		title: "Room Bookings | Accomodation | Invoice",
-		layout: "./layouts/adminLayout",
-	});
+  const {
+    bookingID,
+    firstname,
+    lastname,
+    phoneNumber,
+    email,
+    roomType,
+    roomRate,
+    numberOccupants,
+    check_in_date,
+    check_out_date,
+    subTotal,
+    VAT,
+    totalCost,
+  } = req.session;
+  res.render("admin/bookingsInvoice", {
+    bookingID,
+    firstname,
+    lastname,
+    phoneNumber,
+    email,
+    roomType,
+    roomRate,
+    numberOccupants,
+    check_in_date,
+    check_out_date,
+    subTotal,
+    VAT,
+    totalCost,
+    user: req.user,
+    title: "Room Bookings | Accomodation | Invoice",
+    layout: "./layouts/adminLayout",
+  });
 };
 
 // ______________________________________
@@ -591,50 +613,50 @@ exports.getBookingInvoice = (req, res) => {
 
 // CREATE Room Type Info | POST
 exports.createRoomType = async (req, res, next) => {
-	const newRoomType = new RoomType(req.body);
+  const newRoomType = new RoomType(req.body);
 
-	try {
-		const createdRoomType = await newRoomType.save();
-		res.status(200).json({
-			success: true,
-			data: createdRoomType,
-		});
-	} catch (err) {
-		next(err);
-	}
+  try {
+    const createdRoomType = await newRoomType.save();
+    res.status(200).json({
+      success: true,
+      data: createdRoomType,
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
 // CREATE Room Info | POST
 exports.createRoom = async (req, res, next) => {
-	const { roomtypeid } = req.params;
-	const newRoom = new Room(req.body);
+  const { roomtypeid } = req.params;
+  const newRoom = new Room(req.body);
 
-	try {
-		const createdRoomId = newRoom._id;
-		// console.log("> createdRoomId: ", createdRoomId);
+  try {
+    const createdRoomId = newRoom._id;
+    // console.log("> createdRoomId: ", createdRoomId);
 
-		await RoomType.updateOne(
-			{ _id: roomtypeid },
-			{
-				$push: { rooms: createdRoomId },
-			},
-		)
-			.then(async () => {
-				const createdRoom = await newRoom.save();
+    await RoomType.updateOne(
+      { _id: roomtypeid },
+      {
+        $push: { rooms: createdRoomId },
+      }
+    )
+      .then(async () => {
+        const createdRoom = await newRoom.save();
 
-				res.status(200).json({
-					success: true,
-					data: createdRoom,
-				});
-			})
-			.catch((err) => {
-				console.log("> Error: ", err.message);
-				return next(createError(500, "Error creating room"));
-			});
-	} catch (err) {
-		console.log("> Error: ", err.message);
-		return next(createError(500, "Error creating room"));
-	}
+        res.status(200).json({
+          success: true,
+          data: createdRoom,
+        });
+      })
+      .catch((err) => {
+        console.log("> Error: ", err.message);
+        return next(createError(500, "Error creating room"));
+      });
+  } catch (err) {
+    console.log("> Error: ", err.message);
+    return next(createError(500, "Error creating room"));
+  }
 };
 
 // Room Info | POST Deprecated
@@ -716,88 +738,81 @@ exports.createRoom = async (req, res, next) => {
 // };
 
 // READ All Rooms Info | GET
-exports.fetchAllRooms = (req, res) => {
-	let errors = {};
+exports.fetchAllRooms = (req, res, next) => {
+  let errors = {};
 
-	// Fetching All Bookings Made
-	fetchAllRooms()
-		.then((rooms) => {
-			res.status(200).json({
-				success: true,
-				data: { rooms },
-			});
-		})
-		.catch((err) => {
-			errors = {
-				message: `Error: ${err.message}`,
-			};
-
-			res.status(500).json({
-				success: false,
-				data: errors,
-			});
-		});
+  // Fetching All Bookings Made
+  fetchAllRooms()
+    .then((rooms) => {
+      res.status(200).json({
+        success: true,
+        data: { rooms },
+      });
+    })
+    .catch((err) => {
+      return next(createError(500, `${err.message}`));
+    });
 };
 
 // READ All Room Types | GET
 exports.allRoomTypes = async (req, res, next) => {
-	// Fetching All Room Types
-	try {
-		const roomTypes = await RoomType.find({})
-			.populate({ path: "rooms", model: "Room" })
-			.populate({
-				path: "reservations",
-				populate: {
-					path: "bookingRef",
-					model: "Booking",
-				},
-			});
+  // Fetching All Room Types
+  try {
+    const roomTypes = await RoomType.find({})
+      .populate({ path: "rooms", model: "Room" })
+      .populate({
+        path: "reservations",
+        populate: {
+          path: "bookingRef",
+          model: "Booking",
+        },
+      });
 
-		res.status(200).json({
-			success: true,
-			data: { roomTypes },
-		});
-	} catch (error) {
-		next(error);
-	}
+    res.status(200).json({
+      success: true,
+      data: { roomTypes },
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 // UPDATE Room Type Info | PUT
 exports.updateRoomType = async (req, res, next) => {
-	// Fetching All Room Types
-	try {
-		const roomTypes = await RoomType.find({});
+  // Fetching All Room Types
+  try {
+    const roomTypes = await RoomType.find({});
 
-		res.status(200).json({
-			success: true,
-			data: { roomTypes },
-		});
-	} catch (error) {
-		next(error);
-	}
+    res.status(200).json({
+      success: true,
+      data: { roomTypes },
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 // READ One Room Info | GET
 exports.fetchOneRoom = async (req, res, next) => {
-	const { roomid } = req.params;
-	const room = await fetchOneRoom(roomid);
+  const { roomid } = req.params;
+  const room = await fetchOneRoom(roomid);
 
-	if (room) {
-		res.status(200).json({
-			success: true,
-			data: { room },
-		});
-	} else {
-		return next(createError(404, "Room not found"));
-	}
+  if (room) {
+    res.status(200).json({
+      success: true,
+      data: { room },
+    });
+  } else {
+    return next(createError(404, "Room not found"));
+  }
 };
 
 // READ One Room | GET - Using Room Number
 exports.searchRoom = async (req, res, next) => {
-	// try {
-	// 	const rooms = await Room.find({roomNumbers.number});
-	// 	res.status(200).json(rooms);
-	// } catch (err) {
-	// 	next(err);
-	// }
+  // try {
+  // 	const rooms = await Room.find({roomNumbers.number});
+  // 	res.status(200).json(rooms);
+  // } catch (err) {
+  // 	next(err);
+  // }
 };
