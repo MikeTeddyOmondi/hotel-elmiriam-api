@@ -8,12 +8,14 @@ const {
 	Logout,
 	Refresh,
 	Register,
+	Accounts,
 } = require("../controllers/auth.js");
 
 router.get("/", ApiInfo);
 router.post("/register", Register);
 router.post("/login", Login);
 router.get("/user", AuthenticatedUser);
+router.get("/accounts", Accounts);
 router.post("/refresh", Refresh);
 router.post("/logout", Logout);
 
