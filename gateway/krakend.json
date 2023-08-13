@@ -7,7 +7,36 @@
   "port": 8009,
   "extra_config": {
     "router": {
-      "return_error_msg": true
+      "return_error_msg": true,
+      "auto_options": true
+    },
+    "security/cors": {
+      "allow_origins": ["http*"],
+      "allow_methods": ["GET", "HEAD", "POST", "OPTIONS"],
+      "expose_headers": ["Content-Length", "Content-Type"],
+      "allow_credentials": false,
+      "allow_headers": [
+        "Accept",
+        "Authorization",
+        "Accept-Language",
+        "Accept-Encoding",
+        "Access-Control-Request-Headers",
+        "Access-Control-Request-Method",
+        "Access-Control-Allow-Origin",
+        "Origin",
+        "Content-Type",
+        "Cache-Control",
+        "Pragma",
+        "Host",
+        "User-Agent",
+        "Connection",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site"
+      ],
+      "max_age": "12h",
+      "debug": true
     }
   },
   "endpoints": [
@@ -15,7 +44,7 @@
       "endpoint": "/api/auth/version",
       "method": "GET",
       "output_encoding": "json",
-      "input_headers": ["*"],
+      "input_headers": ["Content-Type"],
       "backend": [
         {
           "url_pattern": "/api/v1",
@@ -30,7 +59,7 @@
       "endpoint": "/api/auth/register",
       "method": "POST",
       "output_encoding": "no-op",
-      "input_headers": ["*"],
+      "input_headers": ["Content-Type"],
       "input_query_strings": [],
       "backend": [
         {
@@ -58,7 +87,7 @@
       "endpoint": "/api/auth/login",
       "method": "POST",
       "output_encoding": "no-op",
-      "input_headers": ["*"],
+      "input_headers": ["Content-Type"],
       "input_query_strings": [],
       "backend": [
         {
@@ -86,7 +115,7 @@
       "endpoint": "/api/auth/user",
       "method": "GET",
       "output_encoding": "no-op",
-      "input_headers": ["*"],
+      "input_headers": ["Authorization", "Content-Type"],
       "input_query_strings": [],
       "backend": [
         {
@@ -114,7 +143,7 @@
       "endpoint": "/api/auth/refresh",
       "method": "POST",
       "output_encoding": "no-op",
-      "input_headers": ["*"],
+      "input_headers": ["Authorization", "Content-Type"],
       "input_query_strings": [],
       "backend": [
         {
@@ -142,7 +171,7 @@
       "endpoint": "/api/auth/logout",
       "method": "POST",
       "output_encoding": "no-op",
-      "input_headers": ["*"],
+      "input_headers": ["Authorization", "Content-Type"],
       "input_query_strings": [],
       "backend": [
         {
@@ -170,7 +199,7 @@
       "endpoint": "/api/hotel/version",
       "method": "GET",
       "output_encoding": "no-op",
-      "input_headers": ["*"],
+      "input_headers": ["Authorization", "Content-Type"],
       "input_query_strings": [],
       "backend": [
         {
@@ -178,7 +207,7 @@
           "method": "GET",
           "encoding": "no-op",
           "sd": "static",
-          "host": "http://127.0.0.1:8003",
+          "host": "http://hotel:8003",
           "disable_host_sanitize": false,
           "target": "",
           "is_collection": false,
@@ -198,7 +227,7 @@
       "endpoint": "/api/hotel/customers",
       "method": "GET",
       "output_encoding": "no-op",
-      "input_headers": ["*"],
+      "input_headers": ["Authorization", "Content-Type"],
       "input_query_strings": [],
       "backend": [
         {
@@ -206,7 +235,7 @@
           "method": "GET",
           "encoding": "no-op",
           "sd": "static",
-          "host": "http://127.0.0.1:8003",
+          "host": "http://hotel:8003",
           "disable_host_sanitize": false,
           "target": "",
           "is_collection": false,
@@ -226,7 +255,7 @@
       "endpoint": "/api/hotel/customers",
       "method": "POST",
       "output_encoding": "no-op",
-      "input_headers": ["*"],
+      "input_headers": ["Authorization", "Content-Type"],
       "input_query_strings": [],
       "backend": [
         {
@@ -234,7 +263,7 @@
           "method": "POST",
           "encoding": "no-op",
           "sd": "static",
-          "host": "http://127.0.0.1:8003",
+          "host": "http://hotel:8003",
           "disable_host_sanitize": false,
           "target": "",
           "is_collection": false,
