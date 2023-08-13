@@ -244,7 +244,7 @@ exports.Accounts = async (req, res) => {
       });
     }
 
-    const payload = verify(refreshToken, ACCESS_SECRET);
+    const payload = verify(accessToken, ACCESS_SECRET);
 
     if (!payload) {
       return res.status(401).json({

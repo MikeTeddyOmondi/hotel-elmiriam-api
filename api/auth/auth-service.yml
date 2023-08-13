@@ -3,7 +3,7 @@ version: "3.6"
 services:
   auth:
     container_name: hotel-elmiriam-auth-svc
-    image: ranckosolutionsinc/auth-service:0.2.0
+    image: ranckosolutionsinc/auth-service:0.3.0
     build: ./
     restart: always
     ports:
