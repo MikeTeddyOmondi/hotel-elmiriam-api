@@ -97,7 +97,7 @@ exports.Login = async (req, res) => {
       isAdmin: user.isAdmin,
     },
     REFRESH_SECRET,
-    { expiresIn: "1w", header: { kid: KID } }
+    { expiresIn: "1w" }
   );
 
   res.cookie("refreshToken", refreshToken, {
@@ -128,7 +128,7 @@ exports.Login = async (req, res) => {
           isAdmin: user.isAdmin,
         },
         ACCESS_SECRET,
-        { expiresIn: "30m", header: { kid: KID } }
+        { expiresIn: "30m"}
       );
 
       res.status(200).json({
