@@ -21,3 +21,4 @@ networks:
   hotel-elmiriam-network:
     name: hotel-elmiriam
     driver: bridge
+    external: true  

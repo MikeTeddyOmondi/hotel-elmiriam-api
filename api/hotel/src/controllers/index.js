@@ -27,7 +27,7 @@ const {
   checkRoomTypeCapacity,
 } = require("../services/hotel.service");
 
-// const { REFRESH_SECRET, ACCESS_SECRET } = require("../config/config.js");
+const { AUTH_API_URL } = require("../config/config.js");
 
 exports.ApiInfo = async (req, res, next) => {
   try {
@@ -457,7 +457,7 @@ exports.addBookings = async (req, res, next) => {
     const { access_token } = req;
     let currentUser = {};
 
-    const resp = await fetch("http://0.0.0.0:8000/api/v1/user", {
+    const resp = await fetch(`${AUTH_API_URL}/api/v1/user`, {
       method: "get",
       headers: {
         authorization: `Bearer ${access_token}`,
