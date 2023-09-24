@@ -283,6 +283,7 @@ exports.Accounts = async (req, res) => {
 exports.Refresh = async (req, res) => {
   try {
     const refreshToken = req.cookies["refreshToken"];
+    console.log({refreshToken});
 
     if (!refreshToken) {
       return res.status(401).json({
@@ -291,6 +292,7 @@ exports.Refresh = async (req, res) => {
       });
     }
     const payload = verify(refreshToken, REFRESH_SECRET);
+    console.log({payload});
 
     if (!payload) {
       return res.status(401).json({
@@ -302,6 +304,7 @@ exports.Refresh = async (req, res) => {
     const refreshtokenSaved = await Token.findOne({
       user_id: payload.id,
     });
+    console.log({refreshtokenSaved});
 
     if (!refreshtokenSaved) {
       return res.status(401).json({
@@ -319,6 +322,7 @@ exports.Refresh = async (req, res) => {
       ACCESS_SECRET,
       { expiresIn: "30m" }
     );
+    console.log({token});
 
     res.status(200).json({
       success: true,
@@ -327,7 +331,7 @@ exports.Refresh = async (req, res) => {
       },
     });
   } catch (err) {
-    console.log(err);
+    console.log({err});
     return res.status(401).json({
       success: false,
       message: "Unauthenticated!",

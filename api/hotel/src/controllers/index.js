@@ -466,12 +466,33 @@ exports.addBookings = async (req, res, next) => {
     const { success, data } = await resp.json();
 
     if (!success) {
-      return next(createError(500, `Session user not found`));
+      return next(createError(500, `User session not found`));
     }
     const { user } = data;
     currentUser = { ...user };
     console.log(`> currentUser: ${currentUser._id}`);
     console.log("> Authorized user: ", req.user);
+
+    if (
+      !customerId ||
+      !numberAdults ||
+      !numberKids ||
+      !roomType ||
+      !checkInDate ||
+      !checkOutDate
+    ) {
+      return next(createError(401, `Please enter all fields`));
+    }
+
+    // Check if checkInDate is invalid
+    let currentDate = new Date().getDate();
+    let dateCheckedIn = new Date(checkInDate).getDate();
+    
+    if (dateCheckedIn < currentDate) {
+      return next(createError(401, `Please choose a current or future date`));
+    }
+
+    // Check if checkOutDate is invalid
 
     // Check if the customer exists
     const customer = await Customer.findOne({ id_number: String(customerId) });

@@ -23,7 +23,9 @@
         "Access-Control-Request-Headers",
         "Access-Control-Request-Method",
         "Access-Control-Allow-Origin",
+        "Access-Control-Allow-Credentials",
         "Origin",
+        "Cookie",
         "Content-Type",
         "Cache-Control",
         "Pragma",
@@ -87,7 +89,7 @@
       "endpoint": "/api/auth/login",
       "method": "POST",
       "output_encoding": "no-op",
-      "input_headers": ["Content-Type"],
+      "input_headers": ["Content-Type", "Cookie"],
       "input_query_strings": [],
       "backend": [
         {
@@ -171,7 +173,7 @@
       "endpoint": "/api/auth/refresh",
       "method": "POST",
       "output_encoding": "no-op",
-      "input_headers": ["Authorization", "Content-Type"],
+      "input_headers": ["Authorization", "Content-Type", "Cookie"],
       "input_query_strings": [],
       "backend": [
         {
@@ -199,7 +201,7 @@
       "endpoint": "/api/auth/logout",
       "method": "POST",
       "output_encoding": "no-op",
-      "input_headers": ["Authorization", "Content-Type"],
+      "input_headers": ["Authorization", "Content-Type", "Cookie"],
       "input_query_strings": [],
       "backend": [
         {
@@ -344,6 +346,118 @@
       "backend": [
         {
           "url_pattern": "/api/v1/bookings",
+          "method": "POST",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": "http://hotel:8003",
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/hotel/roomtypes",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/rooms/types",
+          "method": "GET",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": "http://hotel:8003",
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/hotel/roomtypes",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/rooms/types",
+          "method": "POST",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": "http://hotel:8003",
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/hotel/rooms",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/rooms",
+          "method": "GET",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": "http://hotel:8003",
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/hotel/rooms/{roomtypeid}",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/rooms/{roomtypeid}",
           "method": "POST",
           "encoding": "no-op",
           "sd": "static",
