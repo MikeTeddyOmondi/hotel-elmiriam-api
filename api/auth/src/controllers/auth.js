@@ -4,6 +4,8 @@ const { sign, verify } = require("jsonwebtoken");
 const User = require("../models/User.js");
 const Token = require("../models/Token.js");
 
+const { createError } = require("../utils/error");
+
 const { REFRESH_SECRET, ACCESS_SECRET } = require("../config/config.js");
 
 exports.ApiInfo = async (req, res) => {
@@ -128,7 +130,7 @@ exports.Login = async (req, res) => {
           isAdmin: user.isAdmin,
         },
         ACCESS_SECRET,
-        { expiresIn: "30m"}
+        { expiresIn: "30m" }
       );
 
       res.status(200).json({
@@ -147,53 +149,39 @@ exports.Login = async (req, res) => {
     });
 };
 
-exports.AuthenticatedUser = async (req, res) => {
+exports.AuthenticatedUser = async (req, res, next) => {
   try {
     const reqHeaders = req.headers["authorization"];
     if (!reqHeaders) {
-      return res.status(401).json({
-        success: false,
-        data: {
-          message: "Unauthenticated!",
-        },
-      });
+      return next(createError(401, `Unauthenticated!`));
     }
 
     const accessToken = reqHeaders.split(" ")[1];
     if (!accessToken) {
-      return res.status(401).json({
-        success: false,
-        data: {
-          message: "Unauthenticated!",
-        },
-      });
+      return next(createError(401, `Unauthenticated!`));
     }
 
     // const payload = verify(accessToken, ACCESS_SECRET);
     let payload;
 
-    verify(accessToken, ACCESS_SECRET, (err, data) => {
-      if (err) {
-        // throw Error("Invalid token");
-        return res.status(401).json({
-          success: false,
-          data: {
-            message: "Invalid token",
-          },
-        });
-      }
-      payload = data;
-    });
+    try {
+      verify(accessToken, ACCESS_SECRET, (err, data) => {
+        if (err) {
+          console.log({ err });
+          throw err;
+        }
+        payload = data;
+        console.log({ payload });
+      });
+    } catch (error) {
+      console.log({ error });
+      return next(createError(401, `Invalid token!`));
+    }
 
     const user = await User.findOne({ _id: payload.id });
 
     if (!user) {
-      return res.status(403).json({
-        success: false,
-        data: {
-          message: "Invalid token!",
-        },
-      });
+      return next(createError(401, `Invalid token!`));
     }
 
     const {
@@ -213,12 +201,7 @@ exports.AuthenticatedUser = async (req, res) => {
       },
     });
   } catch (err) {
-    return res.status(500).json({
-      success: false,
-      data: {
-        message: `${err.message}`,
-      },
-    });
+    return next(createError(500, `${err.message}`));
   }
 };
 
@@ -283,7 +266,7 @@ exports.Accounts = async (req, res) => {
 exports.Refresh = async (req, res) => {
   try {
     const refreshToken = req.cookies["refreshToken"];
-    console.log({refreshToken});
+    console.log({ refreshToken });
 
     if (!refreshToken) {
       return res.status(401).json({
@@ -292,7 +275,7 @@ exports.Refresh = async (req, res) => {
       });
     }
     const payload = verify(refreshToken, REFRESH_SECRET);
-    console.log({payload});
+    console.log({ payload });
 
     if (!payload) {
       return res.status(401).json({
@@ -304,7 +287,7 @@ exports.Refresh = async (req, res) => {
     const refreshtokenSaved = await Token.findOne({
       user_id: payload.id,
     });
-    console.log({refreshtokenSaved});
+    console.log({ refreshtokenSaved });
 
     if (!refreshtokenSaved) {
       return res.status(401).json({
@@ -322,7 +305,7 @@ exports.Refresh = async (req, res) => {
       ACCESS_SECRET,
       { expiresIn: "30m" }
     );
-    console.log({token});
+    console.log({ token });
 
     res.status(200).json({
       success: true,
@@ -331,7 +314,7 @@ exports.Refresh = async (req, res) => {
       },
     });
   } catch (err) {
-    console.log({err});
+    console.log({ err });
     return res.status(401).json({
       success: false,
       message: "Unauthenticated!",
