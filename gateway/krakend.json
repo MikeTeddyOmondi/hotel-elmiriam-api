@@ -14,7 +14,7 @@
       "allow_origins": ["http*"],
       "allow_methods": ["GET", "HEAD", "POST", "OPTIONS"],
       "expose_headers": ["Content-Length", "Content-Type"],
-      "allow_credentials": true,
+      "allow_credentials": false,
       "allow_headers": [
         "Accept",
         "Authorization",
