@@ -452,6 +452,7 @@ exports.addBookings = async (req, res, next) => {
       roomType,
       checkInDate,
       checkOutDate,
+      paymentMethod,
     } = req.body;
 
     const { access_token } = req;
@@ -471,28 +472,41 @@ exports.addBookings = async (req, res, next) => {
     const { user } = data;
     currentUser = { ...user };
     console.log(`> currentUser: ${currentUser._id}`);
-    console.log("> Authorized user: ", req.user);
+    // console.log("> Authorized user: ", req.user);
+
+    if (!customerId || !roomType || !checkInDate || !checkOutDate || !paymentMethod) {
+      return next(createError(401, `Please enter all fields`));
+    }
 
     if (
-      !customerId ||
-      !numberAdults ||
-      !numberKids ||
-      !roomType ||
-      !checkInDate ||
-      !checkOutDate
+      typeof numberAdults === "string" ||
+      typeof numberKids === "string" ||
+      parseInt(numberAdults) <= 0 ||
+      parseInt(numberKids) < 0
     ) {
-      return next(createError(401, `Please enter all fields`));
+      return next(
+        createError(401, `Please specify the number of people to accomodate`)
+      );
     }
 
     // Check if checkInDate is invalid
     let currentDate = new Date().getDate();
     let dateCheckedIn = new Date(checkInDate).getDate();
-    
+    let dateCheckedOut = new Date(checkOutDate).getDate();
+
     if (dateCheckedIn < currentDate) {
-      return next(createError(401, `Please choose a current or future date`));
+      return next(
+        createError(
+          401,
+          `Please choose the current or a future date to check in`
+        )
+      );
     }
 
     // Check if checkOutDate is invalid
+    if (dateCheckedOut < dateCheckedIn) {
+      return next(createError(401, `Please choose a future date to check out`));
+    }
 
     // Check if the customer exists
     const customer = await Customer.findOne({ id_number: String(customerId) });
@@ -526,6 +540,26 @@ exports.addBookings = async (req, res, next) => {
     const roomTypeFound = _id;
     // console.log({ roomTypeFound });
 
+    // Create a new invoice
+    const diffinTime = Math.abs(new Date(checkOutDate) - new Date(checkInDate));
+    const diffinDays = Math.ceil(diffinTime / (1000 * 60 * 60 * 24));
+    console.log({ diffinDays });
+
+    const subTotalCost =
+      roomTypeDoc.rate *
+      (diffinDays === 0 ? 1 : diffinDays) *
+      (numberAdults + numberKids);
+    const vat = 0.16 * Number(subTotalCost);
+    const totalCost = subTotalCost + vat;
+
+    const invoice = new Invoice({
+      status: "pending",
+      paymentMethod: paymentMethod,
+      subTotalCost: subTotalCost,
+      vat: vat,
+      totalCost: totalCost,
+    });
+
     // Create a new booking
     const booking = new Booking({
       customer: customer,
@@ -534,12 +568,10 @@ exports.addBookings = async (req, res, next) => {
       roomType: roomTypeFound,
       checkInDate: checkInDate,
       checkOutDate: checkOutDate,
+      invoiceRef: invoice._id,
     });
 
-    // Update the random room chosen
-    room.isBooked = true;
-    await room.save();
-    console.log({ room });
+    invoice.bookingRef = booking._id;
 
     // Update Room Availability: reservations field in RoomType model
     const alldates = getDatesInRange(checkInDate, checkOutDate);
@@ -555,32 +587,18 @@ exports.addBookings = async (req, res, next) => {
       );
     }
 
-    // Save the booking
-    await booking.save();
-    console.log({ booking });
-
-    // Create a new invoice
-    const diffinTime = Math.abs(new Date(checkOutDate) - new Date(checkInDate));
-    const diffinDays = Math.ceil(diffinTime / (1000 * 60 * 60 * 24));
-    console.log({ diffinDays });
-
-    const subTotalCost =
-      roomTypeDoc.rate *
-      (diffinDays === 0 ? 1 : diffinDays) *
-      (numberAdults + numberKids);
-    const vat = 0.16 * Number(subTotalCost);
-    const totalCost = subTotalCost + vat;
-
-    const invoice = new Invoice({
-      bookingRef: booking._id,
-      subTotalCost: subTotalCost,
-      vat: vat,
-      totalCost: totalCost,
-    });
+    // Update the random room chosen
+    room.isBooked = true;
+    await room.save();
+    console.log({ room });
 
     // Save the invoice
     await invoice.save();
     console.log({ invoice });
+
+    // Save the booking
+    await booking.save();
+    console.log({ booking });
 
     res.status(201).json({
       message: "Room booked successfully",

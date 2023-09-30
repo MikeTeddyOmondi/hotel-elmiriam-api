@@ -217,6 +217,7 @@ module.exports = {
     await Booking.find({})
       .populate("customer")
       .populate("roomType")
+      .populate("invoiceRef")
       .then((bookingsMade) => {
         // console.log(`Bookings made: ${bookingsMade}`);
         allBookings = bookingsMade;

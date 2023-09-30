@@ -28,6 +28,11 @@ const BookingSchema = new mongoose.Schema(
 			type: Date,
 			required: true,
 		},
+		invoiceRef: {
+			type: mongoose.Schema.Types.ObjectId,
+			required: true,
+			ref: "Invoice", 
+		}
 	},
 	{ timestamps: true },
 );
@@ -46,12 +51,24 @@ BookingSchema.virtual("room-type", {
 	justOne: true,
 });
 
+BookingSchema.virtual("invoice", {
+	ref: "Invoice",
+	localField: "invoiceRef",
+	foreignField: "_id",
+	justOne: true,
+});
+
 // BookingSchema.virtual("rooms-booked", {
 // 	ref: "Room",
 // 	localField: "roomsBooked",
 // 	foreignField: "_id",
 // 	justOne: true,
 // });
+
+BookingSchema.post('save', async function (doc, next) {
+  await doc.populate('customer').populate('invoiceRef').execPopulate();
+  next();
+});
 
 const Booking = mongoose.model("Booking", BookingSchema);
 

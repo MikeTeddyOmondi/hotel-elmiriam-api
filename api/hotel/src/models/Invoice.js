@@ -1,25 +1,37 @@
 const mongoose = require("mongoose");
 
 const InvoiceSchema = new mongoose.Schema(
-	{
-		bookingRef: {
-			type: mongoose.Types.ObjectId,
-			ref: "Booking",
-		},
-		vat: {
-			type: Number,
-			required: true,
-		},
-		subTotalCost: {
-			type: Number,
-			required: true,
-		},
-		totalCost: {
-			type: Number,
-			required: true,
-		},
-	},
-	{ timestamps: true },
+  {
+    bookingRef: {
+      type: mongoose.Types.ObjectId,
+      ref: "Booking",
+    },
+    status: {
+      type: String,
+      enum: ["paid", "pending"],
+      unique: true,
+      required: true,
+    },
+    paymentMethod: {
+      type: String,
+      enum: ["cash", "mpesa", "bank"],
+      unique: true,
+      required: true,
+    },
+    vat: {
+      type: Number,
+      required: true,
+    },
+    subTotalCost: {
+      type: Number,
+      required: true,
+    },
+    totalCost: {
+      type: Number,
+      required: true,
+    },
+  },
+  { timestamps: true }
 );
 
 InvoiceSchema.virtual("booking", {
