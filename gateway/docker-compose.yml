@@ -4,6 +4,8 @@ services:
   gateway:
     container_name: hotel-elmiriam-api-gateway
     image: ranckosolutionscinc/hotel-elmiriam-api-gateway:v1
+    build: ./
+    restart: unless-stopped
     ports:
       - 8009:8009
     networks:

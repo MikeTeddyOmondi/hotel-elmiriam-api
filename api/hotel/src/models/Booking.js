@@ -66,7 +66,8 @@ BookingSchema.virtual("invoice", {
 // });
 
 BookingSchema.post('save', async function (doc, next) {
-  await doc.populate('customer').populate('invoiceRef').execPopulate();
+  await BookingSchema.populate(doc, {path: 'customer'}).execPopulate();
+  await BookingSchema.populate(doc, {path: 'invoiceRef'}).execPopulate();
   next();
 });
 

@@ -21,8 +21,8 @@ services:
     container_name: hotel-elmiriam-mongo-db
     image: mongo:4.2
     restart: always
-    # ports:
-    #  - 27017:27017
+    ports:
+     - 27017:27017
     # environment:
     #  - MONGO_INITDB_DATABASE=${MONGO_INITDB_ROOT_DATABASE}     
     #  - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}

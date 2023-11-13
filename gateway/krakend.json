@@ -14,7 +14,7 @@
       "allow_origins": ["http*"],
       "allow_methods": ["GET", "HEAD", "POST", "OPTIONS"],
       "expose_headers": ["Content-Length", "Content-Type"],
-      "allow_credentials": false,
+      "allow_credentials": true,
       "allow_headers": [
         "Accept",
         "Authorization",
@@ -35,7 +35,8 @@
         "Referer",
         "Sec-Fetch-Dest",
         "Sec-Fetch-Mode",
-        "Sec-Fetch-Site"
+        "Sec-Fetch-Site",
+        "X-Refresh-Token"
       ],
       "max_age": "12h",
       "debug": true
@@ -53,7 +54,7 @@
           "method": "GET",
           "encoding": "json",
           "sd": "static",
-          "host": "http://auth:8000"
+          "host": ["http://auth:8000"]
         }
       ]
     },
@@ -69,7 +70,7 @@
           "method": "POST",
           "encoding": "no-op",
           "sd": "static",
-          "host": "http://auth:8000",
+          "host": ["http://auth:8000"],
           "disable_host_sanitize": false,
           "target": "",
           "is_collection": false,
@@ -97,7 +98,7 @@
           "method": "POST",
           "encoding": "no-op",
           "sd": "static",
-          "host": "http://auth:8000",
+          "host": ["http://auth:8000"],
           "disable_host_sanitize": false,
           "target": "",
           "is_collection": false,
@@ -110,6 +111,12 @@
           "max_rate": 15,
           "client_max_rate": 5,
           "strategy": "ip"
+        },
+        "modifier/martian": {
+          "header.Blacklist": {
+            "scope": ["response"],
+            "names": ["Access-Control-Allow-Credentials"]
+          }
         }
       }
     },
@@ -125,7 +132,7 @@
           "method": "GET",
           "encoding": "no-op",
           "sd": "static",
-          "host": "http://auth:8000",
+          "host": ["http://auth:8000"],
           "disable_host_sanitize": false,
           "target": "",
           "is_collection": false,
@@ -153,7 +160,7 @@
           "method": "GET",
           "encoding": "no-op",
           "sd": "static",
-          "host": "http://auth:8000",
+          "host": ["http://auth:8000"],
           "disable_host_sanitize": false,
           "target": "",
           "is_collection": false,
@@ -173,7 +180,7 @@
       "endpoint": "/api/auth/refresh",
       "method": "POST",
       "output_encoding": "no-op",
-      "input_headers": ["Authorization", "Content-Type", "Cookie"],
+      "input_headers": ["Authorization", "Content-Type", "Cookie", "X-Refresh-Token"],
       "input_query_strings": [],
       "backend": [
         {
@@ -181,7 +188,7 @@
           "method": "POST",
           "encoding": "no-op",
           "sd": "static",
-          "host": "http://auth:8000",
+          "host": ["http://auth:8000"],
           "disable_host_sanitize": false,
           "target": "",
           "is_collection": false,
@@ -194,6 +201,12 @@
           "max_rate": 15,
           "client_max_rate": 5,
           "strategy": "ip"
+        },
+        "modifier/martian": {
+          "header.Blacklist": {
+            "scope": ["response"],
+            "names": ["Access-Control-Allow-Credentials"]
+          }
         }
       }
     },
@@ -201,7 +214,7 @@
       "endpoint": "/api/auth/logout",
       "method": "POST",
       "output_encoding": "no-op",
-      "input_headers": ["Authorization", "Content-Type", "Cookie"],
+      "input_headers": ["Authorization", "Content-Type", "Cookie", "X-Refresh-Token"],
       "input_query_strings": [],
       "backend": [
         {
@@ -209,7 +222,7 @@
           "method": "POST",
           "encoding": "no-op",
           "sd": "static",
-          "host": "http://auth:8000",
+          "host": ["http://auth:8000"],
           "disable_host_sanitize": false,
           "target": "",
           "is_collection": false,
@@ -222,6 +235,12 @@
           "max_rate": 15,
           "client_max_rate": 5,
           "strategy": "ip"
+        },
+        "modifier/martian": {
+          "header.Blacklist": {
+            "scope": ["response"],
+            "names": ["Access-Control-Allow-Credentials"]
+          }
         }
       }
     },
@@ -237,7 +256,7 @@
           "method": "GET",
           "encoding": "no-op",
           "sd": "static",
-          "host": "http://hotel:8003",
+          "host": ["http://hotel:8003"],
           "disable_host_sanitize": false,
           "target": "",
           "is_collection": false,
@@ -265,7 +284,7 @@
           "method": "GET",
           "encoding": "no-op",
           "sd": "static",
-          "host": "http://hotel:8003",
+          "host": ["http://hotel:8003"],
           "disable_host_sanitize": false,
           "target": "",
           "is_collection": false,
@@ -293,7 +312,7 @@
           "method": "POST",
           "encoding": "no-op",
           "sd": "static",
-          "host": "http://hotel:8003",
+          "host": ["http://hotel:8003"],
           "disable_host_sanitize": false,
           "target": "",
           "is_collection": false,
@@ -321,7 +340,7 @@
           "method": "GET",
           "encoding": "no-op",
           "sd": "static",
-          "host": "http://hotel:8003",
+          "host": ["http://hotel:8003"],
           "disable_host_sanitize": false,
           "target": "",
           "is_collection": false,
@@ -349,7 +368,7 @@
           "method": "POST",
           "encoding": "no-op",
           "sd": "static",
-          "host": "http://hotel:8003",
+          "host": ["http://hotel:8003"],
           "disable_host_sanitize": false,
           "target": "",
           "is_collection": false,
@@ -377,7 +396,7 @@
           "method": "GET",
           "encoding": "no-op",
           "sd": "static",
-          "host": "http://hotel:8003",
+          "host": ["http://hotel:8003"],
           "disable_host_sanitize": false,
           "target": "",
           "is_collection": false,
@@ -405,7 +424,7 @@
           "method": "POST",
           "encoding": "no-op",
           "sd": "static",
-          "host": "http://hotel:8003",
+          "host": ["http://hotel:8003"],
           "disable_host_sanitize": false,
           "target": "",
           "is_collection": false,
@@ -433,7 +452,7 @@
           "method": "GET",
           "encoding": "no-op",
           "sd": "static",
-          "host": "http://hotel:8003",
+          "host": ["http://hotel:8003"],
           "disable_host_sanitize": false,
           "target": "",
           "is_collection": false,
@@ -461,7 +480,7 @@
           "method": "POST",
           "encoding": "no-op",
           "sd": "static",
-          "host": "http://hotel:8003",
+          "host": ["http://hotel:8003"],
           "disable_host_sanitize": false,
           "target": "",
           "is_collection": false,

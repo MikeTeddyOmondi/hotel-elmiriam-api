@@ -3,7 +3,7 @@ version: "3.6"
 services:
   hotel:
     container_name: hotel-elmiriam-hotel-svc
-    image: ranckosolutionsinc/hotel-service:1.0-alpha
+    image: ranckosolutionscinc/hotel-elmiriam-hotel-service:v1.0-alpha
     # build: ./
     restart: always
     environment:

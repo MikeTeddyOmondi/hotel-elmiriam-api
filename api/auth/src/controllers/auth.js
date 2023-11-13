@@ -16,7 +16,7 @@ exports.ApiInfo = async (req, res) => {
   });
 };
 
-exports.Register = async (req, res) => {
+exports.Register = async (req, res, next) => {
   const { username, email, id_number, password, userType } = req.body;
 
   if (!username || !email || !password || !id_number || !userType) {
@@ -66,30 +66,22 @@ exports.Register = async (req, res) => {
     })
     .catch((err) => {
       console.log({ err });
-      return res
-        .status(500)
-        .json({ success: false, message: `Error saving user!` });
+      return next(createError(500, `Error saving user!`));
     });
 };
 
-exports.Login = async (req, res) => {
+exports.Login = async (req, res, next) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
 
   if (!user) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid credentials!",
-    });
+    return next(createError(400, `Invalid credentials!!`));
   }
 
   const isCorrect = await bcryptjs.compare(password, user.password);
   if (!isCorrect) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid credentials!",
-    });
+    return next(createError(400, `Invalid credentials!!`));
   }
 
   const refreshToken = sign(
@@ -99,16 +91,19 @@ exports.Login = async (req, res) => {
       isAdmin: user.isAdmin,
     },
     REFRESH_SECRET,
-    { expiresIn: "1w" }
+    { expiresIn: "1d" }
   );
+  console.log({ refreshToken });
 
-  res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-  });
+  // res.cookie("refreshToken", refreshToken, {
+  //   httpOnly: true,
+  //   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  // });
 
   const expired_at = new Date();
-  expired_at.setDate(expired_at.getDate() + 7);
+  // expired_at.setDate(expired_at.getDate() + 7);
+  expired_at.setDate(expired_at.getDate());
+  console.log({ expired_at });
 
   // Upsert the refreshToken instead of saving
   // to avoid duplicate tokens with the same id
@@ -123,7 +118,7 @@ exports.Login = async (req, res) => {
     { upsert: true }
   )
     .then(() => {
-      const access_token = sign(
+      const accessToken = sign(
         {
           id: user._id,
           userType: user.userType,
@@ -136,16 +131,14 @@ exports.Login = async (req, res) => {
       res.status(200).json({
         success: true,
         data: {
-          token: access_token,
+          accessToken,
+          refreshToken,
         },
       });
     })
     .catch((err) => {
       console.log(err);
-      return res.status(500).json({
-        success: false,
-        message: "Error signing in!",
-      });
+      return next(createError(500, `Error signing in!`));
     });
 };
 
@@ -205,35 +198,22 @@ exports.AuthenticatedUser = async (req, res, next) => {
   }
 };
 
-exports.Accounts = async (req, res) => {
+exports.Accounts = async (req, res, next) => {
   try {
     const reqHeaders = req.headers["authorization"];
     if (!reqHeaders) {
-      return res.status(401).send({
-        success: false,
-        data: {
-          message: "Unauthenticated!",
-        },
-      });
+      return next(createError(401, "Unauthenticated!"));
     }
 
     const accessToken = reqHeaders.split(" ")[1];
     if (!accessToken) {
-      return res.status(401).send({
-        success: false,
-        data: {
-          message: "Unauthenticated!",
-        },
-      });
+      return next(createError(401, "Unauthenticated!"));
     }
 
     const payload = verify(accessToken, ACCESS_SECRET);
 
     if (!payload) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid token!",
-      });
+      return next(createError(401, "Invalid token!"));
     }
 
     const users = await User.find();
@@ -254,34 +234,26 @@ exports.Accounts = async (req, res) => {
       },
     });
   } catch (err) {
-    return res.status(500).json({
-      success: false,
-      data: {
-        message: `${err.message}`,
-      },
-    });
+    console.log({ err });
+    return next(createError(500, `${err.message}`));
   }
 };
 
-exports.Refresh = async (req, res) => {
+exports.Refresh = async (req, res, next) => {
   try {
-    const refreshToken = req.cookies["refreshToken"];
+    // const refreshToken = req.cookies["refreshToken"];
+    const refreshToken = req.headers["x-refresh-token"];
     console.log({ refreshToken });
 
     if (!refreshToken) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthenticated!",
-      });
+      return next(createError(401, `Unauthenticated!`));
     }
+
     const payload = verify(refreshToken, REFRESH_SECRET);
     console.log({ payload });
 
     if (!payload) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthenticated!",
-      });
+      return next(createError(401, `Unauthenticated!`));
     }
 
     const refreshtokenSaved = await Token.findOne({
@@ -290,13 +262,10 @@ exports.Refresh = async (req, res) => {
     console.log({ refreshtokenSaved });
 
     if (!refreshtokenSaved) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthenticated!",
-      });
+      return next(createError(401, `Unauthenticated!`));
     }
 
-    const token = sign(
+    const accessToken = sign(
       {
         id: payload.id,
         userType: payload.userType,
@@ -305,47 +274,39 @@ exports.Refresh = async (req, res) => {
       ACCESS_SECRET,
       { expiresIn: "30m" }
     );
-    console.log({ token });
+    console.log({ accessToken });
 
     res.status(200).json({
       success: true,
       data: {
-        token,
+        accessToken,
       },
     });
   } catch (err) {
     console.log({ err });
-    return res.status(401).json({
-      success: false,
-      message: "Unauthenticated!",
-    });
+    return next(createError(401, `Unauthenticated!`));
   }
 };
 
-exports.Logout = async (req, res) => {
-  const refreshToken = req.cookies["refreshToken"];
+exports.Logout = async (req, res, next) => {
+  // const refreshToken = req.cookies["refreshToken"];
+  const refreshToken = req.headers["x-refresh-token"];
 
   try {
     if (refreshToken) {
       await Token.findOneAndDelete({ token: refreshToken });
 
-      res.cookie("refreshToken", "", { maxAge: 0 });
+      // res.cookie("refreshToken", "", { maxAge: 0 });
 
       res.status(200).json({
         success: true,
         message: "Sign out successful!",
       });
     } else {
-      res.status(500).json({
-        success: false,
-        message: "Unauthenticated!",
-      });
+      return next(createError(500, `Unauthenticated!`));
     }
   } catch (err) {
     console.log(err);
-    res.status(500).json({
-      success: false,
-      message: "Error signing out!",
-    });
+    return next(createError(500, `Error signing out!`));
   }
 };

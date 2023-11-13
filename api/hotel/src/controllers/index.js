@@ -1,5 +1,6 @@
 // const bcryptjs = require("bcryptjs");
 // const { sign, verify } = require("jsonwebtoken");
+const axios = require("axios");
 const { createError } = require("../utils/error");
 const { getDatesInRange } = require("../utils/getDateRange");
 
@@ -458,12 +459,19 @@ exports.addBookings = async (req, res, next) => {
     const { access_token } = req;
     let currentUser = {};
 
+    // Change this to gRPC
     const resp = await fetch(`${AUTH_API_URL}/api/v1/user`, {
       method: "get",
       headers: {
         authorization: `Bearer ${access_token}`,
-      },
+      }, 
     });
+    // const resp = await axios(`${AUTH_API_URL}/api/v1/user`, {
+    //   method: "get",
+    //   headers: {
+    //     authorization: `Bearer ${access_token}`,
+    //   },
+    // });
     const { success, data } = await resp.json();
 
     if (!success) {
@@ -533,12 +541,12 @@ exports.addBookings = async (req, res, next) => {
     // Select a random available room
     const roomIndex = Math.floor(Math.random() * availableRooms.length);
     const room = availableRooms[roomIndex];
-    // console.log({ randomRoomSelected: room });
+    console.log({ randomRoomSelected: room });
 
     // Find the room type based on the random room chosen
     const { _id } = await RoomType.findOne({ rooms: room._id });
     const roomTypeFound = _id;
-    // console.log({ roomTypeFound });
+    console.log({ roomTypeFound });
 
     // Create a new invoice
     const diffinTime = Math.abs(new Date(checkOutDate) - new Date(checkInDate));
@@ -605,6 +613,7 @@ exports.addBookings = async (req, res, next) => {
       data: { booking: booking, room: room, invoice: invoice },
     });
   } catch (error) {
+    console.log({error})
     return next(createError(500, `${error.message}`));
   }
 };
