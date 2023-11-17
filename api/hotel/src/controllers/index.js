@@ -69,7 +69,7 @@ exports.addCustomer = async (req, res) => {
   if (!firstname || !lastname || !id_number || !email) {
     errors = { messsage: "Please enter all fields" };
 
-    return res.status(500).json({
+    return res.status(400).json({
       success: false,
       data: errors,
     });
@@ -80,7 +80,7 @@ exports.addCustomer = async (req, res) => {
       messsage: "Firstname must be at least 3 characters long!",
     };
 
-    return res.status(500).json({
+    return res.status(400).json({
       success: false,
       data: errors,
     });
@@ -88,14 +88,14 @@ exports.addCustomer = async (req, res) => {
   if (lastname.length < 3) {
     errors = { messsage: "Lastname must be at least 3 characters long!" };
 
-    return res.status(500).json({
+    return res.status(400).json({
       success: false,
       data: errors,
     });
   }
 
   if (errors.length > 0) {
-    return res.status(500).json({
+    return res.status(400).json({
       success: false,
       data: errors,
     });
@@ -273,7 +273,7 @@ exports.addBookings = async (req, res, next) => {
       !checkOutDate ||
       !paymentMethod
     ) {
-      return next(createError(401, `Please enter all fields`));
+      return next(createError(400, `Please enter all fields`));
     }
 
     if (
@@ -283,7 +283,7 @@ exports.addBookings = async (req, res, next) => {
       parseInt(numberKids) < 0
     ) {
       return next(
-        createError(401, `Please specify the number of people to accomodate`)
+        createError(400, `Please specify the number of people to accomodate`)
       );
     }
 
@@ -300,7 +300,7 @@ exports.addBookings = async (req, res, next) => {
     if (ischeckInDateOlderThanCurrentDate) {
       return next(
         createError(
-          401,
+          400,
           `Please choose the current or a future date to check in`
         )
       );
@@ -308,7 +308,7 @@ exports.addBookings = async (req, res, next) => {
 
     // Check if checkOutDate is invalid
     if (dateCheckedIn > dateCheckedOut) {
-      return next(createError(401, `Please choose a future date to check out`));
+      return next(createError(400, `Please choose a future date to check out`));
     }
 
     // Check if the customer exists
