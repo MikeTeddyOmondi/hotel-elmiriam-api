@@ -1,6 +1,6 @@
 // const bcryptjs = require("bcryptjs");
 // const { sign, verify } = require("jsonwebtoken");
-const axios = require("axios");
+// const axios = require("axios");
 const { createError } = require("../utils/error");
 const { getDatesInRange } = require("../utils/getDateRange");
 
@@ -228,222 +228,6 @@ exports.searchCustomer = async (req, res) => {
 };
 
 // Admin Panel - POST | Bookings Details Page
-// exports.addBookings = async (req, res, next) => {
-// 	// Destructure the request body
-// 	const {
-// 		customerIdNumber,
-// 		numberAdults,
-// 		numberKids,
-// 		roomType,
-// 		check_in_date,
-// 		check_out_date,
-// 	} = req.body;
-
-// 	const { access_token } = req;
-// 	let currentUser = {};
-
-// 	const resp = await fetch("http://0.0.0.0:8000/api/v1/user", {
-// 		method: "get",
-// 		headers: {
-// 			authorization: `Bearer ${access_token}`,
-// 		},
-// 	});
-// 	const { success, data } = await resp.json();
-
-// 	if (!success) {
-// 		return currentUser;
-// 	}
-// 	const { user } = data;
-// 	currentUser = { ...user };
-// 	console.log(`> currentUser: ${currentUser._id}`);
-
-// 	// Search for customer with provided ID number
-// 	let customerFound = await searchCustomer(customerIdNumber);
-
-// 	if (customerFound === null) {
-// 		return next(createError(500, `No customer found with that ID number`));
-// 	}
-
-// 	// Get the customer's object ID
-// 	const customerId = customerFound._id;
-
-// 	// Find room given the room type
-// 	const roomTypeFound = await findRoomType(roomType);
-// 	console.log("> roomTypeFound: ", roomTypeFound);
-
-// 	const alldates = getDatesInRange(check_in_date, check_out_date);
-
-// 	const totalPeople = parseInt(numberKids) + parseInt(numberAdults);
-// 	console.log("> totalPeople: ", totalPeople);
-
-// 	const roomTypeID = roomTypeFound._id;
-
-// 	// Check if the customer has not yet booked
-// 	// Check if the number of booked room type is equal =>
-// 	// to all the number of rooms of that type rooms created
-
-// 	let roomsBooked = 0;
-// 	let allBookingsInfo = [];
-
-// 	const countRooms = async (objectID) => {
-// 		let roomsCount = 0;
-// 		return (roomsCount = await Booking.countDocuments({ roomType: objectID }));
-// 	};
-
-// 	try {
-// 		let singleRoomsBooked = 0;
-// 		let doubleRoomsBooked = 0;
-
-// 		const allBookings = await fetchBookings();
-// 		// console.log("> allBookings: ", allBookings);
-
-// 		allBookings.map((booking) => {
-// 			let datesBooked = getDatesInRange(
-// 				booking.checkInDate,
-// 				booking.checkOutDate,
-// 			);
-// 			let info = {
-// 				customerIDNo: booking.customer.id_number,
-// 				roomTypeBooked: booking.roomType.roomType,
-// 				datesBooked,
-// 			};
-// 			allBookingsInfo.push(info);
-// 		});
-
-// 		let roomsCount = 0;
-// 		if (roomTypeFound.roomType === "single") {
-// 			singleRoomsBooked = await countRooms(roomTypeFound._id);
-// 			console.log("> singleRooms: ", singleRoomsBooked);
-// 			roomsBooked = singleRoomsBooked;
-// 		} else if (roomTypeFound.roomType === "double") {
-// 			doubleRoomsBooked = await countRooms(roomTypeFound._id);
-// 			console.log("> doubleRooms: ", doubleRoomsBooked);
-// 			roomsBooked = doubleRoomsBooked;
-// 		}
-// 	} catch (err) {
-// 		console.log(err);
-// 		return next(createError(500, `Failed to fetch all bookings`));
-// 	}
-
-// 	console.log("> allBookingsInfo", allBookingsInfo);
-// 	console.log("> roomsBooked", roomsBooked);
-
-// 	// No. of rooms: Single / Double
-// 	let totalRooms = 0;
-
-// 	if (roomTypeFound.roomType === "single") {
-// 		const numberOfSingleRooms = roomTypeFound.rooms.length;
-// 		console.log("> singleRooms: ", numberOfSingleRooms);
-// 		totalRooms = numberOfSingleRooms;
-// 	} else if (roomTypeFound.roomType === "double") {
-// 		const numberOfDoubleRooms = roomTypeFound.rooms.length;
-// 		console.log("> doubleRooms: ", numberOfDoubleRooms);
-// 		totalRooms = numberOfDoubleRooms;
-// 	}
-
-// 	console.log("> totalRooms: ", totalRooms);
-
-// 	if (roomsBooked > totalRooms) {
-// 		return next(createError(500, "No rooms available for booking"));
-// 	}
-
-// 	const isCustomerBooked = (listOfIDNumbers) => {
-// 		// const isFound = listOfIDNumbers.some((idNumber) =>
-// 		// 	listOfIDNumbers.includes(idNumber),
-// 		// );
-// 		const data = {
-// 			customerIDNo: customerIdNumber,
-// 			roomTypeBooked: roomType,
-// 			datesBooked: getDatesInRange(
-// 				check_in_date,
-// 				check_out_date,
-// 			)
-// 		};
-
-// 		const isFound = allBookingsInfo.includes(data);
-// 		return isFound;
-// 	};
-
-// 	let hasCustomerBooked = isCustomerBooked(allBookingsInfo);
-// 	console.log("> hasCustomerBooked: ", hasCustomerBooked);
-
-// 	if (hasCustomerBooked) {
-// 		return next(createError(500, "Customer already booked"));
-// 	}
-
-// 	// Reservation
-
-// 	// Check room if its available
-// 	// let isRoomAvailable = await checkRoomAvailability(roomFound, alldates); // Service to be created
-// 	const isAvailable = (roomType) => {
-// 		const isFound = roomType.reservations.unavailableDates.some((date) =>
-// 			alldates.includes(new Date(date).getTime()),
-// 		);
-
-// 		return !isFound;
-// 	};
-
-// 	let isRoomAvailable = isAvailable(roomTypeFound);
-// 	console.log("> isRoomAvailable: ", isRoomAvailable);
-
-// 	// check room capacity
-// 	const roomTypeMaxCapacity = await checkRoomTypeCapacity(roomTypeFound);
-// 	console.log("> roomTypeMaxCapacity: ", roomTypeMaxCapacity);
-
-// 	// If room is available proceed to reservation
-// 	if (!isRoomAvailable) {
-// 		return next(createError(500, "Room not available"));
-// 	}
-
-// 	if (roomTypeMaxCapacity >= totalPeople) {
-// 		try {
-// 			const bookingDetails = {
-// 				customerId,
-// 				numberKids,
-// 				numberAdults,
-// 				roomType: roomTypeID,
-// 				check_in_date,
-// 				check_out_date,
-// 			};
-// 			console.log("> bookingDetails: ", bookingDetails);
-
-// 			// Room Type Rate
-// 			const rate = roomTypeFound.rate;
-
-// 			// Create Reservation
-// 			const { newBooking, newInvoice } = await saveBookingAndInvoice(
-// 				bookingDetails,
-// 				rate,
-// 				customerId,
-// 			);
-// 			// console.log("> booking: ", booking);
-// 			console.log("> Ok");
-
-// 			// Updated Room Availability
-// 			const updated = await updateRoomTypeAvailability(
-// 				roomTypeFound._id,
-// 				alldates,
-// 				newBooking._id,
-// 			);
-// 			console.log("> updated: ", updated);
-
-// 			if (updated) {
-// 				return res.status(200).json({
-// 					success: true,
-// 					data: {
-// 						newBooking,
-// 						newInvoice,
-// 					},
-// 				});
-// 			}
-// 		} catch (error) {
-// 			console.log(error);
-// 			return next(createError(500, `Error: ${error.message}`));
-// 		}
-// 	} else {
-// 		return next(createError(500, "Room capacity exceeded"));
-// 	}
-// };
 exports.addBookings = async (req, res, next) => {
   try {
     const {
@@ -464,7 +248,7 @@ exports.addBookings = async (req, res, next) => {
       method: "get",
       headers: {
         authorization: `Bearer ${access_token}`,
-      }, 
+      },
     });
     // const resp = await axios(`${AUTH_API_URL}/api/v1/user`, {
     //   method: "get",
@@ -482,7 +266,13 @@ exports.addBookings = async (req, res, next) => {
     console.log(`> currentUser: ${currentUser._id}`);
     // console.log("> Authorized user: ", req.user);
 
-    if (!customerId || !roomType || !checkInDate || !checkOutDate || !paymentMethod) {
+    if (
+      !customerId ||
+      !roomType ||
+      !checkInDate ||
+      !checkOutDate ||
+      !paymentMethod
+    ) {
       return next(createError(401, `Please enter all fields`));
     }
 
@@ -498,11 +288,16 @@ exports.addBookings = async (req, res, next) => {
     }
 
     // Check if checkInDate is invalid
-    let currentDate = new Date().getDate();
-    let dateCheckedIn = new Date(checkInDate).getDate();
-    let dateCheckedOut = new Date(checkOutDate).getDate();
+    let today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    if (dateCheckedIn < currentDate) {
+    let dateCheckedIn = new Date(checkInDate).getTime();
+    let dateCheckedOut = new Date(checkOutDate).getTime();
+
+    const ischeckInDateOlderThanCurrentDate = dateCheckedIn < today.getTime();
+    // console.log({ ischeckInDateOlderThanCurrentDate });
+
+    if (ischeckInDateOlderThanCurrentDate) {
       return next(
         createError(
           401,
@@ -512,7 +307,7 @@ exports.addBookings = async (req, res, next) => {
     }
 
     // Check if checkOutDate is invalid
-    if (dateCheckedOut < dateCheckedIn) {
+    if (dateCheckedIn > dateCheckedOut) {
       return next(createError(401, `Please choose a future date to check out`));
     }
 
@@ -524,29 +319,52 @@ exports.addBookings = async (req, res, next) => {
 
     // Check if the room type exists
     const roomTypeDoc = await RoomType.findOne({ roomType });
+    const roomTypeDocID = roomTypeDoc._id; 
+    console.log({ roomTypeDocID });
     if (!roomTypeDoc) {
       return next(createError(404, `Room type not found`));
     }
+    console.log({ roomsRoomTypeSelected: roomTypeDoc.rooms });
 
     // Check if there are available rooms
-    const availableRooms = await Room.find({ isBooked: false });
-    const isRoomTypeAvailable =
-      roomTypeDoc.reservations.bookingRef.length <= roomTypeDoc.rooms.length;
-    console.log({ isRoomTypeAvailable });
+    // const availableRooms = await Room.find({ isBooked: false });
     // console.log({ availableRooms });
+    const allRoomsNotBooked = await Room.find({ isBooked: false });
+    console.log({ allRoomsNotBooked });
+    // const isRoomTypeAvailable =
+    //   roomTypeDoc.reservations.bookingRef.length <= roomTypeDoc.rooms.length;
+    const isRoomTypeAvailable = roomTypeDoc.rooms.some((room) =>
+      allRoomsNotBooked.some(
+        (availableRoom) =>
+          availableRoom._id.equals(room) && !availableRoom.isBooked
+      )
+    );
+    console.log({ isRoomTypeAvailable });
     if (!isRoomTypeAvailable) {
       return next(createError(500, `No rooms available`));
     }
 
+    const availableSelectedRooms = roomTypeDoc.rooms
+      .map((selectedRoom) =>
+        allRoomsNotBooked.find(
+          (room) => room._id.equals(selectedRoom) && !room.isBooked
+        )
+      )
+      .filter(Boolean);
+    console.log({ availableSelectedRooms });
+
     // Select a random available room
-    const roomIndex = Math.floor(Math.random() * availableRooms.length);
-    const room = availableRooms[roomIndex];
+    // const roomIndex = Math.floor(Math.random() * availableRooms.length);
+    const roomIndex = Math.floor(Math.random() * availableSelectedRooms.length);
+    console.log({ roomIndex });
+    // const room = availableRooms[roomIndex];
+    const room = availableSelectedRooms[roomIndex];
     console.log({ randomRoomSelected: room });
 
     // Find the room type based on the random room chosen
-    const { _id } = await RoomType.findOne({ rooms: room._id });
-    const roomTypeFound = _id;
-    console.log({ roomTypeFound });
+    // const { _id } = await RoomType.findOne({ rooms: room._id });
+    // // const roomTypeFound = _id;
+    // console.log({ roomTypeFound });
 
     // Create a new invoice
     const diffinTime = Math.abs(new Date(checkOutDate) - new Date(checkInDate));
@@ -573,7 +391,7 @@ exports.addBookings = async (req, res, next) => {
       customer: customer,
       numberAdults: numberAdults,
       numberKids: numberKids,
-      roomType: roomTypeFound,
+      roomType: roomTypeDocID,
       checkInDate: checkInDate,
       checkOutDate: checkOutDate,
       invoiceRef: invoice._id,
@@ -584,7 +402,7 @@ exports.addBookings = async (req, res, next) => {
     // Update Room Availability: reservations field in RoomType model
     const alldates = getDatesInRange(checkInDate, checkOutDate);
     const hasUpdatedReservations = await updateRoomTypeAvailability(
-      roomTypeFound,
+      roomTypeDocID,
       alldates,
       booking._id
     );
@@ -613,7 +431,7 @@ exports.addBookings = async (req, res, next) => {
       data: { booking: booking, room: room, invoice: invoice },
     });
   } catch (error) {
-    console.log({error})
+    console.log({ error });
     return next(createError(500, `${error.message}`));
   }
 };
@@ -683,24 +501,24 @@ exports.createRoom = async (req, res, next) => {
     const createdRoomId = newRoom._id;
     // console.log("> createdRoomId: ", createdRoomId);
 
-    await RoomType.updateOne(
+    const queryRes = await RoomType.updateOne(
       { _id: roomtypeid },
       {
         $push: { rooms: createdRoomId },
       }
-    )
-      .then(async () => {
-        const createdRoom = await newRoom.save();
+    );
+    console.log({ matchedSchema: queryRes.matchedCount });
 
-        res.status(200).json({
-          success: true,
-          data: createdRoom,
-        });
-      })
-      .catch((err) => {
-        console.log("> Error: ", err.message);
-        return next(createError(500, "Error creating room"));
-      });
+    if (queryRes.matchedCount === 0) {
+      return next(createError(500, `Room type: ${roomtypeid} not found!`));
+    }
+
+    const createdRoom = await newRoom.save();
+
+    res.status(200).json({
+      success: true,
+      data: createdRoom,
+    });
   } catch (err) {
     console.log("> Error: ", err.message);
     return next(createError(500, "Error creating room"));

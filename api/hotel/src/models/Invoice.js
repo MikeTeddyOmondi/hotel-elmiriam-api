@@ -9,13 +9,11 @@ const InvoiceSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ["paid", "pending"],
-      unique: true,
       required: true,
     },
     paymentMethod: {
       type: String,
       enum: ["cash", "mpesa", "bank"],
-      unique: true,
       required: true,
     },
     vat: {
@@ -35,10 +33,10 @@ const InvoiceSchema = new mongoose.Schema(
 );
 
 InvoiceSchema.virtual("booking", {
-	ref: "Booking",
-	localField: "booking",
-	foreignField: "_id",
-	justOne: true,
+  ref: "Booking",
+  localField: "booking",
+  foreignField: "_id",
+  justOne: true,
 });
 
 const Invoice = mongoose.model("Invoice", InvoiceSchema);
