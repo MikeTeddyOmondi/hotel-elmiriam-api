@@ -91,7 +91,7 @@ exports.Login = async (req, res, next) => {
       isAdmin: user.isAdmin,
     },
     REFRESH_SECRET,
-    { expiresIn: "1d" }
+    { expiresIn: "8h" }
   );
   console.log({ refreshToken });
 
@@ -103,7 +103,7 @@ exports.Login = async (req, res, next) => {
   const expired_at = new Date();
   // expired_at.setDate(expired_at.getDate() + 7);
   expired_at.setDate(expired_at.getDate());
-  console.log({ expired_at });
+  // console.log({ expired_at });
 
   // Upsert the refreshToken instead of saving
   // to avoid duplicate tokens with the same id
@@ -125,8 +125,9 @@ exports.Login = async (req, res, next) => {
           isAdmin: user.isAdmin,
         },
         ACCESS_SECRET,
-        { expiresIn: "30m" }
+        { expiresIn: "1h" }
       );
+      console.log({ accessToken });
 
       res.status(200).json({
         success: true,
@@ -306,7 +307,7 @@ exports.Logout = async (req, res, next) => {
       return next(createError(500, `Unauthenticated!`));
     }
   } catch (err) {
-    console.log(err);
+    console.log({ err });
     return next(createError(500, `Error signing out!`));
   }
 };
