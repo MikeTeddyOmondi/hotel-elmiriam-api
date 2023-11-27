@@ -34,7 +34,7 @@ const InvoiceSchema = new mongoose.Schema(
 
 InvoiceSchema.virtual("booking", {
   ref: "Booking",
-  localField: "booking",
+  localField: "bookingRef",
   foreignField: "_id",
   justOne: true,
 });
