@@ -3,9 +3,9 @@ version: '3.6'
 services:
   gateway:
     container_name: hotel-elmiriam-api-gateway
-    image: ranckosolutionscinc/hotel-elmiriam-api-gateway:v1
+    image: ranckosolutionsinc/hotel-elmiriam-api-gateway:v1
     build: ./
-    restart: unless-stopped
+    restart: always
     ports:
       - 8009:8009
     networks:
@@ -15,3 +15,4 @@ networks:
   hotel-elmiriam-network:
     name: hotel-elmiriam
     driver: bridge
+    external: true  
