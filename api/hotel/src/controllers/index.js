@@ -28,6 +28,7 @@ const {
   fetchAllRooms,
   checkRoomTypeCapacity,
   findBooking,
+  fetchInvoices,
 } = require("../services/hotel.service");
 
 const { AUTH_API_URL } = require("../config/config.js");
@@ -491,7 +492,7 @@ exports.getAllBookingInvoice = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      data: { bookings },
+      data: { allInvoices },
     });
   } catch (error) {
     return next(createError(500, `${error.message}`));
