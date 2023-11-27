@@ -10,6 +10,7 @@ const Booking = require("../models/Booking");
 const Invoice = require("../models/Invoice");
 const Room = require("../models/Room");
 const RoomType = require("../models/RoomType");
+const { isObjectIdOrHexString } = require("mongoose");
 
 // Booking Logic | Customer
 module.exports = {
@@ -73,19 +74,14 @@ module.exports = {
   },
   findCustomer: async (objectID) => {
     // Searching for customer given the unique Object ID
-    let customer;
-
-    await Customer.findOne({ _id: objectID })
-      .then((customerFound) => {
-        console.log(`> Customer Found: ${customerFound._id}`);
-        customer = customerFound;
-      })
-      .catch((err) => {
-        console.log(`> [Booking Service] error - ${err.message}`);
-        return err;
-      });
-
-    return customer;
+    try {
+      const customerFound = await Customer.findById(objectID);
+      console.log(`> Customer Found: ${customerFound._id}`);
+      return customerFound;
+    } catch (err) {
+      console.log(`> [Booking Service] error - ${err.message}`);
+      return err;
+    }
   },
   fetchAllRooms: async () => {
     let rooms;
@@ -233,6 +229,20 @@ module.exports = {
 
     return allBookings;
   },
+  findBooking: async (objectID) => {
+    // Fetch booking given the unique Object ID
+    try {
+      if (isObjectIdOrHexString(objectID)) {
+        const bookingFound = await Booking.findById(objectID);
+        console.log(`> Booking Found: ${bookingFound._id}`);
+        return bookingFound;
+      }
+      throw new Error(`Booking not found: ${objectID}`);
+    } catch (err) {
+      console.log(`> [Booking Service] error - ${err.message}`);
+      return err;
+    }
+  },
   updateRoomStatus: async (roomNumber, boolean) => {
     if (boolean == true) {
       await Room.findOneAndUpdate(
@@ -316,5 +326,26 @@ module.exports = {
       console.log(err);
       return (updated = false);
     }
+  },
+  fetchInvoices: async () => {
+    // Logic here
+    let allInvoices = {};
+
+    await Invoice.find({})
+      .populate("bookingRef")
+      .then((invoices) => {
+        // console.log(`Invoices: ${invoices}`);
+        allInvoices = invoices;
+        return allInvoices;
+      })
+      .catch((err) => {
+        console.log(
+          `> [Booking Service] An error occurred while fetching data - ${err.message}`
+        );
+        allInvoices = {};
+        return err;
+      });
+
+    return allInvoices;
   },
 };
