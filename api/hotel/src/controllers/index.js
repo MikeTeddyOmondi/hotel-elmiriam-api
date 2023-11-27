@@ -3,6 +3,7 @@
 // const axios = require("axios");
 const { createError } = require("../utils/error");
 const { getDatesInRange } = require("../utils/getDateRange");
+const { isObjectIdOrHexString } = require("mongoose");
 
 const Customer = require("../models/Customer.js");
 const RoomType = require("../models/RoomType.js");
@@ -26,6 +27,7 @@ const {
   fetchOneRoom,
   fetchAllRooms,
   checkRoomTypeCapacity,
+  findBooking,
 } = require("../services/hotel.service");
 
 const { AUTH_API_URL } = require("../config/config.js");
@@ -60,8 +62,30 @@ exports.getAllCustomers = async (req, res, next) => {
   }
 };
 
+// Read Single Customer | GET (by objectId)
+exports.getOneCustomer = async (req, res, next) => {
+  const { customerid } = req.params;
+
+  // Fetching One Customer...
+  try {
+    if (isObjectIdOrHexString(customerid)) {
+      const customer = await Customer.findById(customerid);
+      console.log(`> Customer Found: ${customer._id}`);
+
+      res.status(200).json({
+        success: true,
+        data: { customer },
+      });
+    }
+    return next(createError(500, `Invalid  ID: ${customerid}`));
+  } catch (error) {
+    console.log(`> Error: ${error.message}`);
+    return next(createError(404, `Booking not found!`));
+  }
+};
+
 // Add Customers | POST
-exports.addCustomer = async (req, res) => {
+exports.addCustomer = async (req, res, next) => {
   const { firstname, lastname, id_number, phone_number, email } = req.body;
 
   let errors = {};
@@ -167,8 +191,8 @@ exports.addCustomer = async (req, res) => {
 // ADD HOTEL ACCOMODATIONS | INFORMATION
 // ________________________________________________
 
-// Room Booking List View | GET
-exports.getAllBookings = async (req, res) => {
+// Room Booking List View | GET ALL
+exports.getAllBookings = async (req, res, next) => {
   // Fetching All Bookings Made
   try {
     const bookings = await fetchBookings();
@@ -178,7 +202,30 @@ exports.getAllBookings = async (req, res) => {
       data: { bookings },
     });
   } catch (error) {
-    next(error);
+    return next(createError(500, `${error.message}`));
+  }
+};
+
+// Room Bookings | GET SINGLE (By ID)
+exports.getOneBooking = async (req, res, next) => {
+  const { bookingid } = req.params;
+
+  // Fetching One Booking...
+  try {
+    if (isObjectIdOrHexString(bookingid)) {
+      const booking = await Booking.findById(bookingid);
+      console.log(`> Booking Found: ${booking._id}`);
+
+      res.status(200).json({
+        success: true,
+        data: { booking },
+      });
+    }
+    return next(createError(500, `Invalid  ID: ${bookingid}`));
+    // const booking = await findBooking(bookingid);
+  } catch (error) {
+    console.log(`> Error: ${error.message}`);
+    return next(createError(404, `Booking not found!`));
   }
 };
 
@@ -319,7 +366,7 @@ exports.addBookings = async (req, res, next) => {
 
     // Check if the room type exists
     const roomTypeDoc = await RoomType.findOne({ roomType });
-    const roomTypeDocID = roomTypeDoc._id; 
+    const roomTypeDocID = roomTypeDoc._id;
     console.log({ roomTypeDocID });
     if (!roomTypeDoc) {
       return next(createError(404, `Room type not found`));
@@ -436,41 +483,41 @@ exports.addBookings = async (req, res, next) => {
   }
 };
 
+// READ All Invoices | GET
+exports.getAllBookingInvoice = async (req, res, next) => {
+  // Fetching All Invoices Made
+  try {
+    const allInvoices = await fetchInvoices();
+
+    res.status(200).json({
+      success: true,
+      data: { bookings },
+    });
+  } catch (error) {
+    return next(createError(500, `${error.message}`));
+  }
+}
+
 // Admin Panel - GET | Bookings Invoice Page
-exports.getBookingInvoice = (req, res) => {
-  const {
-    bookingID,
-    firstname,
-    lastname,
-    phoneNumber,
-    email,
-    roomType,
-    roomRate,
-    numberOccupants,
-    check_in_date,
-    check_out_date,
-    subTotal,
-    VAT,
-    totalCost,
-  } = req.session;
-  res.render("admin/bookingsInvoice", {
-    bookingID,
-    firstname,
-    lastname,
-    phoneNumber,
-    email,
-    roomType,
-    roomRate,
-    numberOccupants,
-    check_in_date,
-    check_out_date,
-    subTotal,
-    VAT,
-    totalCost,
-    user: req.user,
-    title: "Room Bookings | Accomodation | Invoice",
-    layout: "./layouts/adminLayout",
-  });
+exports.getBookingInvoice = async (req, res, next) => {
+  const { invoiceid } = req.params;
+
+  // Fetching One Invoice...
+  try {
+    if (isObjectIdOrHexString(invoiceid)) {
+      const invoice = await Invoice.findById(invoiceid);
+      console.log(`> Invoice found: ${invoice._id}`);
+
+      res.status(200).json({
+        success: true,
+        data: { invoice },
+      });
+    }
+    return next(createError(500, `Invalid  ID: ${invoiceid}`));
+  } catch (error) {
+    console.log(`> Error: ${error.message}`);
+    return next(createError(404, `Invoice not found!`));
+  }
 };
 
 // ______________________________________
