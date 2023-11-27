@@ -14,13 +14,16 @@ const {
 	addCustomer,
 	searchCustomer,
 	getAllBookings,
+	getOneBooking,
 	addBookings,
+	getAllBookingInvoice,
 	getBookingInvoice,
 	createRoom,
 	createRoomType,
 	fetchOneRoom,
 	allRoomTypes,
 	fetchAllRooms,
+	getOneCustomer,
 } = require("../controllers/index.js");
 
 // READ API Information
@@ -32,20 +35,26 @@ router.get("/customers", verifyStaff, getAllCustomers);
 // CREATE NEW CUSTOMER
 router.post("/customers", verifyToken, addCustomer);
 
-// READ CUSTOMER | Search - Requires: idnumber
+// READ ONE CUSTOMER | Search - Requires: objectId
+router.get("/customers/:customerid", verifyUser, getOneCustomer);
+
+// READ ONE CUSTOMER | Search - Requires: idnumber
 router.get("/customers/:idnumber", verifyUser, searchCustomer);
 
 // READ ALL BOOKINGS
 router.get("/bookings", verifyUser, getAllBookings);
 
+// READ One BOOKINGS
+router.get("/bookings/:bookingid", verifyUser, getOneBooking);
+
 // CREATE NEW BOOKING
 router.post("/bookings", verifyToken, addBookings);
 
 // READ ALL INVOICES
-// router.get("/invoices/", getAllBookingInvoice);
+router.get("/invoices", verifyUser, getAllBookingInvoice);
 
 // READ ONE INVOICE
-// router.get("/invoices/:id", getBookingInvoice);
+router.get("/invoices/:id", verifyUser, getBookingInvoice);
 
 // READ ALL ROOMS
 router.get("/rooms", verifyAdmin, fetchAllRooms);
