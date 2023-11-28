@@ -214,7 +214,10 @@ exports.getOneBooking = async (req, res, next) => {
   // Fetching One Booking...
   try {
     if (isObjectIdOrHexString(bookingid)) {
-      const booking = await Booking.findById(bookingid);
+      const booking = await Booking.findById(bookingid)
+        .populate("customer")
+        .populate("roomType")
+        .populate("invoiceRef");
       console.log(`> Booking Found: ${booking._id}`);
 
       res.status(200).json({
