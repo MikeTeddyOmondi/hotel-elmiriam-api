@@ -4,7 +4,7 @@ default:
 
 # Build docker image
 build-image:
-  docker build -t ranckosolutionscinc/hotel-elmiriam-hotel-service:v1.0-alpha . 
+  docker build -t ranckosolutionsinc/hotel-elmiriam-hotel-service:v1.0-alpha . 
 
 # Docker compose 
 run-compose:

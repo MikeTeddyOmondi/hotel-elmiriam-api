@@ -4,7 +4,7 @@ default:
 
 # Build Docker image
 build-image:
-  docker build -t ranckosolutionscinc/hotel-elmiriam-api-gateway:v1 .
+  docker build -t ranckosolutionsinc/hotel-elmiriam-api-gateway:v1 .
 
 # Docker compose 
 run-compose:
