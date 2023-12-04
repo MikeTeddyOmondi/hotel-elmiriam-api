@@ -1,0 +1,22 @@
+version: "3.6"
+
+services:
+  hotel:
+    container_name: hotel-elmiriam-checkout-svc
+    image: ranckosolutionscinc/hotel-elmiriam-checkout-service:v1.0
+    # build: ./
+    restart: always
+    environment:
+      - PORT=8008
+    env_file:
+      - ./.env
+    ports:
+      - "8008:8008"
+    networks:
+      - hotel-elmiriam-network
+
+networks:
+  hotel-elmiriam-network:
+    name: hotel-elmiriam
+    driver: bridge
+    external: true  
