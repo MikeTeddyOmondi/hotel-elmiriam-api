@@ -4,11 +4,18 @@
   "name": "hotel-elmiriam-api-gateway",
   "timeout": "30000ms",
   "cache_ttl": "3600s",
+  "disable_rest": false,
   "port": 8009,
   "extra_config": {
     "router": {
       "return_error_msg": true,
-      "auto_options": true
+      "auto_options": true,
+      "error_body": {
+        "404": {
+          "msg": "Unknown endpoint!",
+          "status": 404
+        }
+      }
     },
     "security/cors": {
       "allow_origins": ["http*"],
