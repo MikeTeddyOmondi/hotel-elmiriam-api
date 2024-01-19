@@ -1,9 +1,9 @@
 version: "3.6"
 
 services:
-  hotel:
+  checkout:
     container_name: hotel-elmiriam-checkout-svc
-    image: ranckosolutionscinc/hotel-elmiriam-checkout-service:v1.0
+    image: ranckosolutionsinc/hotel-elmiriam-checkout-service:v1.0
     # build: ./
     restart: always
     environment:

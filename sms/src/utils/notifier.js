@@ -5,7 +5,7 @@ const { MOBITECH_API_KEY, MOBITECH_API_URL } = require("../config");
 async function sendSMS(data) {
   // BulkSMS API: MOBITECH_API_URL/sendsms
   // Params
-  // Sample JSON data
+  // Sample request JSON data
   // data = {
   //     "mobile": "254702XXXXX",
   //     "response_type": "json",

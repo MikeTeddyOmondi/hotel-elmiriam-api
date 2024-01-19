@@ -2,8 +2,8 @@ version: "3.6"
 
 services:
   sms:
-    container_name: sms-service
-    image: ranckosolutionsinc/sms-service:v1.0
+    container_name: hotel-elmiriam-sms-svc
+    image: ranckosolutionsinc/hotel-elmiriam-sms-service:v1.0
     # build: ./
     restart: always
     ports:
@@ -19,24 +19,7 @@ services:
     depends_on:
       - mongo
 
-  mongo:
-    container_name: sms-service-db
-    image: mongo:4.2
-    restart: always
-    # ports:
-    #   - 27017:27017
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
-    volumes:
-      - sms-service-db-data:/data/db
-    networks:
-      - sms-service-network
-
-volumes:
-  sms-service-db-data:
-
 networks:
-  sms-service-network:
-    name: sms-service
+  hotel-elmiriam-network:
+    name: hotel-elmiriam
     driver: bridge

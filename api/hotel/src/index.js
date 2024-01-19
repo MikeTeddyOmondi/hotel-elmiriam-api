@@ -28,7 +28,7 @@ mongoose
           "http://localhost:8080",
         ],
         credentials: true,
-      })
+      }),
     );
 
     // Logs
@@ -37,12 +37,24 @@ mongoose
       : app.use(morgan("dev"));
 
     // routes(app);
+
+    // API routes
     app.use("/api/v1", router);
-    app.use("/", verifyToken, (req, res) => {
+
+    // API Info
+    app.use("/api", verifyToken, (req, res) => {
       res.status(200).json({
         success: true,
         message: "Hotel API",
         description: "Hotel API | Version 1",
+      });
+    });
+
+    // 404 route
+    app.use("*", verifyToken, (req, res) => {
+      res.status(404).json({
+        success: false,
+        message: "Resource Not Found",
       });
     });
 

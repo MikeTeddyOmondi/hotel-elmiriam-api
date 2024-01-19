@@ -4,11 +4,11 @@ default:
 
 # Docker build image
 build-image:
-  docker build --pull -t ranckosolutionsinc/mpesa-service . 
+  docker build -t ranckosolutionsinc/hotel-elmiriam-checkout-service:v1.0 . 
 
 # Docker Container
 run-container:
-  docker run -d -p 3000:3000 --name mpesa-service ranckosolutionsinc/mpesa-service 
+  docker run -d -p 3000:3000 --name hotel-elmiriam-checkout-service ranckosolutionsinc/hotel-elmiriam-checkout-service:v1.0
 
 # Docker compose
 run-compose:

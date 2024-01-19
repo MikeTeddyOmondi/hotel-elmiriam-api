@@ -624,6 +624,34 @@
           "strategy": "ip"
         }
       }
+    },
+    {
+      "endpoint": "/api/hotel/mpesa-payment/{invoiceid}",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/mpesa-payment/{invoiceid}",
+          "method": "POST",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://hotel:8003"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
     }
   ]
 }

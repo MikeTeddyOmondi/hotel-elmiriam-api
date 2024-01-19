@@ -9,21 +9,22 @@ const {
 } = require("../utils/verifyToken");
 
 const {
-	ApiInfo,
-	getAllCustomers,
-	addCustomer,
-	searchCustomer,
-	getAllBookings,
-	getOneBooking,
-	addBookings,
-	getAllBookingInvoice,
-	getBookingInvoice,
-	createRoom,
-	createRoomType,
-	fetchOneRoom,
-	allRoomTypes,
-	fetchAllRooms,
-	getOneCustomer,
+  ApiInfo,
+  getAllCustomers,
+  addCustomer,
+  searchCustomer,
+  getAllBookings,
+  getOneBooking,
+  addBookings,
+  getAllBookingInvoice,
+  getBookingInvoice,
+  createRoom,
+  createRoomType,
+  fetchOneRoom,
+  allRoomTypes,
+  fetchAllRooms,
+  getOneCustomer,
+  initiateMpesaPayment,
 } = require("../controllers/index.js");
 
 // READ API Information
@@ -55,6 +56,9 @@ router.get("/invoices", verifyUser, getAllBookingInvoice);
 
 // READ ONE INVOICE
 router.get("/invoices/:id", verifyUser, getBookingInvoice);
+
+// INITIATE INVOICE PAYMENT
+router.post("/mpesa-payment/:bookingid", verifyUser, initiateMpesaPayment);
 
 // READ ALL ROOMS
 router.get("/rooms", verifyAdmin, fetchAllRooms);

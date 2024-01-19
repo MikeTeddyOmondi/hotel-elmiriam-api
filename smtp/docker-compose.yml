@@ -2,8 +2,8 @@ version: "3.6"
 
 services:
   mail:
-    container_name: mail-service
-    image: ranckosolutionsinc/mail-service:v1.0
+    container_name: hotel-elmiriam-mail-svc
+    image: ranckosolutionsinc/hotel-elmiriam-mail-service:v1.0
     # build: ./
     restart: always
     ports:
@@ -17,6 +17,6 @@ services:
       - mail-service-network
 
 networks:
-  mail-service-network:
-    name: mail-service
+  hotel-elmiriam-network:
+    name: hotel-elmiriam    
     driver: bridge

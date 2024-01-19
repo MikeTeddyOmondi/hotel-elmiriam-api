@@ -1,7 +1,8 @@
 // import axios from "axios";
 import { config } from "dotenv";
 // import { QueueMsg } from "../types";
-const IntaSend = require("intasend-node");
+// const IntaSend = require("intasend-node");
+import IntaSend from "intasend-node";
 
 config();
 

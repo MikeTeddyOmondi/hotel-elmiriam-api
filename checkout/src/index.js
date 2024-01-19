@@ -43,4 +43,7 @@ app.get("*", (c) =>
   })
 );
 
-export default app;
+export default {
+  port: 8008,
+  fetch: app.fetch 
+};

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A mpesa microservice built on Hono(Bun)",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "dev": "bun run --hot --watch src/index.js"
   },
