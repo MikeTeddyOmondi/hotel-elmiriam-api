@@ -1,3 +1,12 @@
-node_modules
-.git
+node_modules/
+package.json
+package-lock.json
+bar-service.yml
+Dockerfile
+README.md
+.dockerignore
+.env.sample
 .gitignore
+.justfile
+.snyk
+.git

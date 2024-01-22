@@ -11,6 +11,7 @@
 	"author": "MikeTeddyOmondi",
 	"license": "MIT",
 	"dependencies": {
+		"@namatery/multer-minio": "^1.1.1",
 		"amqplib": "^0.10.3",
 		"cloudinary": "^1.32.0",
 		"cookie-parser": "^1.4.6",

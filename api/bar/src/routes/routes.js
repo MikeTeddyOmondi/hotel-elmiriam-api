@@ -2,19 +2,19 @@ const express = require("express");
 const router = express.Router();
 
 const {
-	verifyToken,
-	verifyStaff,
-	verifyAdmin,
+  verifyToken,
+  verifyStaff,
+  verifyAdmin,
 } = require("../utils/verifyToken");
 
 const { imageUploads } = require("../services/drinkImageUpload");
 
 const {
-	apiInfo,
-	getBarDrinks,
-	getOneBarDrink,
-	addBarDrinks,
-	getBarPurchases,
+  apiInfo,
+  getBarDrinks,
+  getOneBarDrink,
+  addBarDrinks,
+  getBarPurchases,
 } = require("../controllers");
 
 // API version information
