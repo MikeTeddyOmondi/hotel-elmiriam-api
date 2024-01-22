@@ -8,9 +8,9 @@ build-image:
 
 # Docker compose 
 run-compose:
-  docker compose -f hotel-service.yml up -d
+  docker compose -f bar-service.yml up -d
 
 # Docker compose down
 run-compose-down:
-  docker compose -f hotel-service.yml down
+  docker compose -f bar-service.yml down
 

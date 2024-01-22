@@ -2,7 +2,7 @@ FROM node:18.18.2-alpine
 
 WORKDIR /app
 
-COPY package*.json .
+COPY package*.json ./
 
 ARG NODE_ENV
 
@@ -15,7 +15,7 @@ COPY . /app
 
 USER 1000
 
-ENV PORT 8003
+ENV PORT 8004
 
 EXPOSE $PORT
 

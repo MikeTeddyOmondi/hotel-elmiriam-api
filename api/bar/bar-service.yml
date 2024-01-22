@@ -3,13 +3,13 @@ version: "3.6"
 services:
   hotel:
     container_name: hotel-elmiriam-bar-svc
-    image: ranckosolutionsinc/hotel-elmiriam-bar-service:v1.0.0-alpha
+    image: ranckosolutionsinc/hotel-elmiriam-bar-service:v1.0-alpha
     # build: ./
     restart: always
     environment:
       - PORT=8004
     env_file:
-      - ./src/.env
+      - ./.env
     ports:
       - "8004:8004"
     networks:
@@ -21,4 +21,4 @@ networks:
   hotel-elmiriam-network:
     name: hotel-elmiriam
     driver: bridge
-    external: true  
+    external: true
