@@ -20,7 +20,7 @@ if (
   MINIO_API_HOST == undefined
 ) {
   console.error("[#] Configuration required!");
-  process.exit(1);
+  // process.exit(1);
 }
 
 const BUCKET_NAME = String("hotel-elmiriam");
