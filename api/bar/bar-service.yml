@@ -1,7 +1,7 @@
 version: "3.6"
 
 services:
-  hotel:
+  bar:
     container_name: hotel-elmiriam-bar-svc
     image: ranckosolutionsinc/hotel-elmiriam-bar-service:v1.0-alpha
     # build: ./
@@ -14,9 +14,25 @@ services:
       - "8004:8004"
     networks:
       - hotel-elmiriam-network
-    # depends_on:
-    #   - mongo
+    depends_on:
+      - minio
 
+  minio:
+    container_name: hotel-elmiriam-object-store
+    image: minio/minio
+    restart: always
+    environment:
+      - MINIO_ROOT_USER=minio
+      - MINIO_ROOT_PASSWORD=minio_password
+    ports:
+      - 9003:9000
+      - 9001:9001
+    volumes:
+      - ./uploads:/data    
+    networks:    
+      - hotel-elmiriam-network
+    command: server /data --console-address ":9001"    
+ 
 networks:
   hotel-elmiriam-network:
     name: hotel-elmiriam
