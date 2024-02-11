@@ -19,7 +19,7 @@
 		"express": "^4.17.3",
 		"jsonwebtoken": "^9.0.0",
 		"luxon": "^2.3.2",
-		"mongoose": "^6.2.10",
+		"mongoose": "^8.0.0",
 		"morgan": "^1.10.0",
 		"nodemailer": "^6.7.3",
 		"pino": "^8.6.1",
