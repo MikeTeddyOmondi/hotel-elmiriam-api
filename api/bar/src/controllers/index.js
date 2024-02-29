@@ -68,6 +68,10 @@ exports.addBarDrinks = async (req, res, next) => {
   const { drinkName, drinkCode, typeOfDrink, uom, buyingPrice, sellingPrice } =
     bodyData;
 
+  if (req.file === undefined) {
+    createError(500, `Drink image file required!`);
+  }
+
   const { mimetype, originalname, path } = req.file;
   console.log({ mimetype, originalname, path });
 
