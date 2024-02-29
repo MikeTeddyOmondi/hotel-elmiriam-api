@@ -57,7 +57,7 @@ mongoose
         data: {
           message: errorMessage,
         },
-        stack: err.stack,
+        stack: process.env.NODE_ENV === "production" ? {} : err.stack,
       });
     });
 
