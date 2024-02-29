@@ -68,7 +68,7 @@ exports.addBarDrinks = async (req, res, next) => {
   const { drinkName, drinkCode, typeOfDrink, uom, buyingPrice, sellingPrice } =
     bodyData;
 
-  const { mimetype, originalname, path } = req.file;
+  const { mimetype, originalname, path } = req.file ?? {};
   console.log({ mimetype, originalname, path });
 
   let errors = {};
