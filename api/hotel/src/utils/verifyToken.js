@@ -16,7 +16,7 @@ const verifyToken = (req, res, next) => {
   }
 
   jwt.verify(token, ACCESS_SECRET, (err, user) => {
-    if (err) return next(createError(403, "Invalid token"));
+    if (err) return next(createError(401, "Invalid token"));
     req.user = user;
     req.access_token = token;
     next();
@@ -36,14 +36,14 @@ const verifyUser = (req, res, next) => {
   }
 
   jwt.verify(token, ACCESS_SECRET, (err, user) => {
-    if (err) return next(createError(403, "Invalid token"));
+    if (err) return next(createError(401, "Invalid token"));
 
     if (user.id === req.params.id || user.isAdmin) {
       req.user = user;
       req.access_token = token;
       next();
     } else {
-      return next(createError(403, "Unauthorized request"));
+      return next(createError(401, "Unauthorized request"));
     }
   });
 };
@@ -61,7 +61,7 @@ const verifyStaff = (req, res, next) => {
   }
 
   jwt.verify(token, ACCESS_SECRET, (err, user) => {
-    if (err) return next(createError(403, "Invalid token"));
+    if (err) return next(createError(401, "Invalid token"));
 
     if (
       user.userType === "staff" ||
@@ -72,7 +72,7 @@ const verifyStaff = (req, res, next) => {
       req.access_token = token;
       next();
     } else {
-      return next(createError(403, "Unauthorized request"));
+      return next(createError(401, "Unauthorized request"));
     }
   });
 };
@@ -91,14 +91,14 @@ const verifyAdmin = (req, res, next) => {
   }
 
   jwt.verify(token, ACCESS_SECRET, (err, user) => {
-    if (err) return next(createError(403, "Invalid token"));
+    if (err) return next(createError(401, "Invalid token"));
 
     if (user.isAdmin) {
       req.user = user;
       req.access_token = token;
       next();
     } else {
-      return next(createError(403, "Unauthorized request"));
+      return next(createError(401, "Unauthorized request"));
     }
   });
 };
