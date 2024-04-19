@@ -2,10 +2,10 @@ const express = require("express");
 const router = express.Router();
 
 const {
-	verifyToken,
-	verifyUser,
-	verifyStaff,
-	verifyAdmin,
+  verifyToken,
+  verifyUser,
+  verifyStaff,
+  verifyAdmin,
 } = require("../utils/verifyToken");
 
 const {
@@ -25,6 +25,7 @@ const {
   fetchAllRooms,
   getOneCustomer,
   initiateMpesaPayment,
+  initiateSmsNotification,
 } = require("../controllers/index.js");
 
 // READ API Information
@@ -59,6 +60,9 @@ router.get("/invoices/:id", verifyUser, getBookingInvoice);
 
 // INITIATE INVOICE PAYMENT
 router.post("/mpesa-payment/:bookingid", verifyUser, initiateMpesaPayment);
+
+// INITIATE SMS NOTIFICATIONS - BOOKING INVOICE
+router.post("/sms/:bookingid", verifyUser, initiateSmsNotification);
 
 // READ ALL ROOMS
 router.get("/rooms", verifyAdmin, fetchAllRooms);

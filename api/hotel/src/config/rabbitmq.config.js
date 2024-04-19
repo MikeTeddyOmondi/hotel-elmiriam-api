@@ -36,7 +36,7 @@ class RabbitMQConfig {
 
   async publishToQueue(queueName, message) {
     await this.channel.sendToQueue(queueName, Buffer.from(message));
-    console.log(`✅  Send Message to ${queueName} in ${RABBITMQ_VHOST}`);
+    console.log(`✅  Sent message to ${queueName} queue in ${RABBITMQ_VHOST} virtual host`);
   }
 
   async subscribeToQueue(queueName, callback, options) {

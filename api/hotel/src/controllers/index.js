@@ -335,7 +335,7 @@ exports.addBookings = async (req, res, next) => {
       parseInt(numberKids) < 0
     ) {
       return next(
-        createError(400, `Please specify the number of people to accomodate`),
+        createError(400, `Please specify the number of people to accomodate`)
       );
     }
 
@@ -353,8 +353,8 @@ exports.addBookings = async (req, res, next) => {
       return next(
         createError(
           400,
-          `Please choose the current or a future date to check in`,
-        ),
+          `Please choose the current or a future date to check in`
+        )
       );
     }
 
@@ -388,8 +388,8 @@ exports.addBookings = async (req, res, next) => {
     const isRoomTypeAvailable = roomTypeDoc.rooms.some((room) =>
       allRoomsNotBooked.some(
         (availableRoom) =>
-          availableRoom._id.equals(room) && !availableRoom.isBooked,
-      ),
+          availableRoom._id.equals(room) && !availableRoom.isBooked
+      )
     );
     console.log({ isRoomTypeAvailable });
     if (!isRoomTypeAvailable) {
@@ -399,8 +399,8 @@ exports.addBookings = async (req, res, next) => {
     const availableSelectedRooms = roomTypeDoc.rooms
       .map((selectedRoom) =>
         allRoomsNotBooked.find(
-          (room) => room._id.equals(selectedRoom) && !room.isBooked,
-        ),
+          (room) => room._id.equals(selectedRoom) && !room.isBooked
+        )
       )
       .filter(Boolean);
     console.log({ availableSelectedRooms });
@@ -456,12 +456,12 @@ exports.addBookings = async (req, res, next) => {
     const hasUpdatedReservations = await updateRoomTypeAvailability(
       roomTypeDocID,
       alldates,
-      booking._id,
+      booking._id
     );
     // console.log("> UpdatedReservations: ", hasUpdatedReservations);
     if (!hasUpdatedReservations) {
       return next(
-        createError(500, `Error occurred while updating room reservations`),
+        createError(500, `Error occurred while updating room reservations`)
       );
     }
 
@@ -527,7 +527,7 @@ exports.getBookingInvoice = async (req, res, next) => {
 
 exports.initiateMpesaPayment = async (req, res, next) => {
   const { bookingid } = req.params;
-  console.log({bookingid});
+  // console.log({ bookingid });
 
   // Fetching Booking...
   try {
@@ -539,14 +539,18 @@ exports.initiateMpesaPayment = async (req, res, next) => {
         .populate("invoiceRef");
       console.log(`> Booking Found: ${booking}`);
 
+      if (booking === null) {
+        return next(createError(404, `Booking ${bookingid} not found!`));
+      }
+
       const message = {
-        first_name: "jon",
-        last_name: "doe",
-        email: "joe@gmail.com",
-        host: "https://hotel-elmiriam.com",
-        amount: 10,
-        phone_number: "254717135176",
-        api_ref: "test",
+        first_name: String(booking.customer.firstname),
+        last_name: String(booking.customer.lastname),
+        email: String(booking.customer.email),
+        host: "https://hotel-elmariam.com",
+        amount: Number(booking.invoiceRef.totalCost),
+        phone_number: String(booking.customer.phone_number),
+        api_ref: `hotel-elmariam-booking-${String(booking._id)}`,
       };
 
       // Send Message to Queue
@@ -570,10 +574,77 @@ exports.initiateMpesaPayment = async (req, res, next) => {
       });
       return;
     }
+    return next(createError(404, `Booking ${bookingid} not found!`));
+  } catch (error) {
+    console.log(`> Error: ${error.message}`);
+    return next(
+      createError(
+        500,
+        `Error occurred while initiating mpesa payment: ${error.message}`
+      )
+    );
+  }
+};
+
+exports.initiateSmsNotification = async (req, res, next) => {
+  const { bookingid } = req.params;
+  // console.log({ bookingid });
+
+  // Fetching Booking...
+  try {
+    if (isObjectIdOrHexString(bookingid)) {
+      // const booking = await findBooking(bookingid);
+      const booking = await Booking.findById(bookingid)
+        .populate("customer")
+        .populate("roomType")
+        .populate("invoiceRef");
+      console.log(`> Booking Found: ${booking}`);
+
+      if (booking === null) {
+        return next(createError(404, `Booking ${bookingid} not found!`));
+      }
+
+      const message = `Greetings ${
+        booking.customer.firstname
+      }. Your hotel boooking invoice of amount Kes. ${
+        booking.invoiceRef.totalCost
+      } is due on ${booking.checkOutDate.toLocaleDateString()}`;
+
+      const smsMessage = {
+        message,
+        phoneNumbers: `0${String(booking.customer.phone_number).slice(3)}`,
+      };
+
+      // Send Message to Queue
+      const queue = "sms";
+      const rabbitMQConfig = new RabbitMQConfig();
+
+      // Open connection
+      await rabbitMQConfig.connect();
+
+      // send message to publish
+      await rabbitMQConfig.createQueue(queue);
+      await rabbitMQConfig.publishToQueue(queue, JSON.stringify(smsMessage));
+
+      // Close connection
+      await rabbitMQConfig.close();
+
+      // Return response
+      res.status(200).json({
+        success: true,
+        data: { message: "SMS notification sent..." },
+      });
+      return;
+    }
     return next(createError(404, `Invalid  ID: ${bookingid}`));
   } catch (error) {
     console.log(`> Error: ${error.message}`);
-    return next(createError(500, `Error occurred while initiating mpesa payment: ${error.message}`));
+    return next(
+      createError(
+        500,
+        `Error occurred while sending SMS notification: ${error.message}`
+      )
+    );
   }
 };
 
@@ -609,7 +680,7 @@ exports.createRoom = async (req, res, next) => {
       { _id: roomtypeid },
       {
         $push: { rooms: createdRoomId },
-      },
+      }
     );
     console.log({ matchedSchema: queryRes.matchedCount });
 
