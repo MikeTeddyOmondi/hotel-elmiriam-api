@@ -1,5 +1,3 @@
-version: "3.6"
-
 services:
   checkout:
     container_name: hotel-elmiriam-checkout-svc
@@ -8,8 +6,12 @@ services:
     restart: always
     environment:
       - PORT=8008
-    env_file:
-      - ./.env
+      - RABBITMQ_URL=${RABBITMQ_URL}
+      - INTASEND_API_TOKEN=${INTASEND_API_TOKEN}
+      - INTASEND_PUBLISHABLE_KEY=${INTASEND_PUBLISHABLE_KEY}
+      - INTASEND_TEST_MODE=${INTASEND_TEST_MODE}
+    # env_file:
+    #   - ./.env
     ports:
       - "8008:8008"
     networks:

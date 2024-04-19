@@ -6,12 +6,13 @@ import IntaSend from "intasend-node";
 
 config();
 
-const { INTASEND_API_TOKEN, INTASEND_PUBLISHABLE_KEY } = process.env;
+const { INTASEND_API_TOKEN, INTASEND_PUBLISHABLE_KEY, INTASEND_TEST_MODE } =
+  process.env;
 
 let intasend = new IntaSend(
   INTASEND_PUBLISHABLE_KEY,
   INTASEND_API_TOKEN,
-  true // set to false when going live
+  Boolean(INTASEND_TEST_MODE) // set to false when going live
 );
 
 // Typescript
@@ -22,15 +23,15 @@ let intasend = new IntaSend(
 // );
 
 let collection = intasend.collection();
-console.log(collection);
+// console.log(collection);
 
 // Trigger STK Push
 async function checkout(data) {
-  console.log({ data });
+  // console.log({ data });
 
   // Parse the string data into an JSON object
   const dataParsed = JSON.parse(data);
-  console.log({ dataParsed });
+  // console.log({ dataParsed });
 
   // Example of Body (Data Expected):
   // {

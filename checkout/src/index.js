@@ -18,14 +18,14 @@ const { RABBITMQ_URL } = process.env;
   await mpesaChannel.assertQueue(queue);
 
   // Listener
-  mpesaChannel.consume(queue, (msg) => {
+  mpesaChannel.consume(queue, async (msg) => {
     if (msg !== null) {
       console.log("Recieved:", msg.content.toString("utf8"));
       try {
         let queueMsg = msg.content.toString();
-        console.log({ queueMsg });
+        // console.log({ queueMsg });
 
-        checkout(queueMsg);
+        await checkout(queueMsg);
       } catch (error) {
         console.log(`Error while consuming the queue message: ${error};`);
       }
@@ -47,3 +47,5 @@ export default {
   port: 8008,
   fetch: app.fetch 
 };
+
+console.log(`[#] Checkout service running on 8008`)
