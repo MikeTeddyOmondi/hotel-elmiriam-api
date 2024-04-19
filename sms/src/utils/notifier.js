@@ -1,38 +1,64 @@
 const axios = require("axios");
 
-const { MOBITECH_API_KEY, MOBITECH_API_URL } = require("../config");
+const {
+  UJUMBESMS_API_KEY,
+  UJUMBESMS_ACCOUNT_EMAIL,
+  UJUMBESMS_API_URL,
+} = require("../config");
 
+/**
+ * **sendSMS** - sms notifier function
+ *
+ * Example of **data** Object
+ * ```json
+ * {
+ *  "phoneNumbers": "01110203456",
+ *  "message": "sms message"
+ * }
+ * ```
+ *
+ * @param {Object} data Object
+ * @param {string} data.phoneNumbers String of phone numbers delimited by comma.
+ * @param {string} data.message Message to send
+ */
 async function sendSMS(data) {
-  // BulkSMS API: MOBITECH_API_URL/sendsms
+  // BulkSMS API: /api/messaging
+
   // Params
-  // Sample request JSON data
-  // data = {
-  //     "mobile": "254702XXXXX",
-  //     "response_type": "json",
-  //     "sender_name": "23107",
-  //     "service_id": 0,
-  //     "message": "This is a message.\n\nRegards\nMobiTech Technologies"
-  // }
+  // Sample request JSON data- UjumbeSMS
+  // data: [
+  //   {
+  //     message_bag: {
+  //       numbers: "0723660400,0712090304",
+  //       message: "Messagefromthefirstbag",
+  //       sender: "DEPTHSMS",
+  //     },
+  //   },
+  // ];
 
   const response = await axios.post(
-    `${MOBITECH_API_URL}`,
+    `${UJUMBESMS_API_URL}/api/messaging`,
     {
-      mobile: "254717135176",
-      response_type: "json",
-      sender_name: "23107",
-      service_id: 0,
-      message: "OTP: 646903",
+      data: [
+        {
+          message_bag: {
+            numbers: data.phoneNumbers,
+            message: data.message,
+            sender: "UjumbeSMS",
+          },
+        },
+      ],
     },
     {
       headers: {
-        h_api_key: MOBITECH_API_KEY,
-        "Content-Type": "application/json",
+        email: UJUMBESMS_ACCOUNT_EMAIL,
+        "X-Authorization": UJUMBESMS_API_KEY,
       },
     }
   );
 
-  // console.log({ data });
-  console.log({ response: response.data[0] });
+  console.log(response.data);
+  // console.log({ response: response.data[0] });
 }
 
 module.exports = { sendSMS };

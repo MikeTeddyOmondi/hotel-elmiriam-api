@@ -21,4 +21,4 @@ ENV PORT 7879
 
 EXPOSE $PORT
 
-CMD ["node", "./src/server.js"]
+CMD ["node", "./index.js"]

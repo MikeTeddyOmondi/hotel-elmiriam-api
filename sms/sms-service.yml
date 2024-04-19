@@ -1,5 +1,3 @@
-version: "3.6"
-
 services:
   sms:
     container_name: hotel-elmiriam-sms-svc
@@ -12,14 +10,14 @@ services:
       - PORT=${PORT}
       - DB_URL=${DB_URL}
       - NODE_ENV=${NODE_ENV}
-      - ACCESS_SECRET=${ACCESS_SECRET}
-      - REFRESH_SECRET=${REFRESH_SECRET}
+      - UJUMBESMS_API_KEY=${UJUMBESMS_API_KEY}
+      - UJUMBESMS_API_URL=${UJUMBESMS_API_URL}
+      - UJUMBESMS_ACCOUNT_EMAIL=${UJUMBESMS_ACCOUNT_EMAIL}
     networks:
-      - sms-service-network
-    depends_on:
-      - mongo
+      - hotel-elmiriam-network
 
 networks:
   hotel-elmiriam-network:
     name: hotel-elmiriam
     driver: bridge
+    external: true
