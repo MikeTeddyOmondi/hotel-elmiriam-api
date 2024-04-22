@@ -1,5 +1,3 @@
-version: "3.6"
-
 services:
   bar:
     container_name: hotel-elmiriam-bar-svc

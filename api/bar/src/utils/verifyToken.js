@@ -36,7 +36,7 @@ const verifyUser = (req, res, next) => {
   }
 
   jwt.verify(token, ACCESS_SECRET, (err, user) => {
-    if (err) return next(createError(403, "Invalid token"));
+    if (err) return next(createError(401, "Invalid token"));
 
     if (user.id === req.params.id || user.isAdmin) {
       next();
@@ -59,7 +59,7 @@ const verifyStaff = (req, res, next) => {
   }
 
   jwt.verify(token, ACCESS_SECRET, (err, user) => {
-    if (err) return next(createError(403, "Invalid token"));
+    if (err) return next(createError(401, "Invalid token"));
 
     if (user.userType === "staff" || user.isAdmin) {
       next();
@@ -82,7 +82,7 @@ const verifyAdmin = (req, res, next) => {
   }
 
   jwt.verify(token, ACCESS_SECRET, (err, user) => {
-    if (err) return next(createError(403, "Invalid token"));
+    if (err) return next(createError(401, "Invalid token"));
 
     // console.log({ user });
 

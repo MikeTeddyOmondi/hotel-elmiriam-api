@@ -69,7 +69,7 @@ exports.addBarDrinks = async (req, res, next) => {
     bodyData;
 
   const { mimetype, originalname, path } = req.file ?? {};
-  console.log({ mimetype, originalname, path });
+  // console.log({ mimetype, originalname, path });
 
   let errors = {};
 
@@ -174,7 +174,7 @@ exports.addBarDrinks = async (req, res, next) => {
 
   saveDrink(newDrink)
     .then((doc) => {
-      res.status(200).json({
+      res.status(201).json({
         success: true,
         data: {
           message: `Drink: ${doc.drinkCode} created successfully!`,
