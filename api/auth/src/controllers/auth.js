@@ -91,7 +91,7 @@ exports.Login = async (req, res, next) => {
       isAdmin: user.isAdmin,
     },
     REFRESH_SECRET,
-    { expiresIn: "8h" }
+    { expiresIn: "1h" }
   );
   console.log({ refreshToken });
 
@@ -125,7 +125,7 @@ exports.Login = async (req, res, next) => {
           isAdmin: user.isAdmin,
         },
         ACCESS_SECRET,
-        { expiresIn: "1h" }
+        { expiresIn: "30m" }
       );
       console.log({ accessToken });
 
@@ -201,22 +201,6 @@ exports.AuthenticatedUser = async (req, res, next) => {
 
 exports.Accounts = async (req, res, next) => {
   try {
-    const reqHeaders = req.headers["authorization"];
-    if (!reqHeaders) {
-      return next(createError(401, "Unauthenticated!"));
-    }
-
-    const accessToken = reqHeaders.split(" ")[1];
-    if (!accessToken) {
-      return next(createError(401, "Unauthenticated!"));
-    }
-
-    const payload = verify(accessToken, ACCESS_SECRET);
-
-    if (!payload) {
-      return next(createError(401, "Invalid token!"));
-    }
-
     const users = await User.find();
 
     if (users.length === 0) {

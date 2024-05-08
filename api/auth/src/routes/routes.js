@@ -11,11 +11,13 @@ const {
 	Accounts,
 } = require("../controllers/auth.js");
 
+const { verifyAdmin } = require("../utils/verifyAdmin.js");
+
 router.get("/", ApiInfo);
 router.post("/register", Register);
 router.post("/login", Login);
 router.get("/user", AuthenticatedUser);
-router.get("/accounts", Accounts);
+router.get("/accounts", verifyAdmin, Accounts);
 router.post("/refresh", Refresh);
 router.post("/logout", Logout);
 
