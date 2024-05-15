@@ -988,6 +988,174 @@
           "strategy": "ip"
         }
       }
+    },
+    {
+      "endpoint": "/api/bar/sales",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/sales",
+          "method": "GET",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/bar/sales",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/sales",
+          "method": "POST",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/bar/sales/{salesid}",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/sales/{salesid}",
+          "method": "GET",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/bar/sales/{salesid}",
+      "method": "PUT",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/sales/{salesid}",
+          "method": "PUT",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/bar/sales/{salesid}",
+      "method": "DELETE",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/sales/{salesid}",
+          "method": "DELETE",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/bar/sales/lipa-mpesa/{salesid}",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/lipa-mpesa/{salesid}",
+          "method": "POST",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 10,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
     }
   ]
 }
