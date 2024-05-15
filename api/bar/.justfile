@@ -7,10 +7,10 @@ build-image:
   docker build -t ranckosolutionsinc/hotel-elmiriam-bar-service:v1.0-alpha . 
 
 # Docker compose 
-run-compose:
+compose:
   docker compose -f bar-service.yml up -d
 
 # Docker compose down
-run-compose-down:
+compose-down:
   docker compose -f bar-service.yml down
 

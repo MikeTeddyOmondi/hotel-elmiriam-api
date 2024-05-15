@@ -1,5 +1,3 @@
-version: '3.6'
-
 services:
   gateway:
     container_name: hotel-elmiriam-api-gateway
