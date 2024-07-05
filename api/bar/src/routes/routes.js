@@ -15,6 +15,12 @@ const {
   getOneBarDrink,
   addBarDrinks,
   getBarPurchases,
+  getOneBarPurchase,
+  postBarPurchases,
+  getBarSales,
+  getOneBarSale,
+  postBarSales,
+  lipaNaMpesa,
 } = require("../controllers");
 
 // API version information
@@ -35,21 +41,22 @@ router.get("/drinks/:id", verifyAdmin, getOneBarDrink);
 // Get/Post/Put/Delete | Bar Purchases
 // ___________________________________________
 router.get("/purchases", verifyAdmin, getBarPurchases);
-// router.post("/purchases", verifyAdmin, postBarPurchases);
+router.post("/purchases", verifyAdmin, postBarPurchases);
 
 // Get/Put/Delete | Bar Purchases [ONE]
-// router.get("/purchases/:id", verifyAdmin, getOneBarPurchase);
+router.get("/purchases/:id", verifyAdmin, getOneBarPurchase);
 // router.put("/purchases/:id", verifyAdmin, updateOneBarPurchase);
 // router.delete("/purchases/:id", verifyAdmin, deleteOneBarPurchase);
 
 // ___________________________________________
 // // Get/Post/Put/Delete | Bar Sales
 // ___________________________________________
-// router.get("/sales", verifyAdmin, getBarSales);
-// router.post("/sales", verifyAdmin, postBarSales);
+router.get("/sales", verifyStaff, getBarSales);
+router.get("/sales", verifyStaff, postBarSales);
+router.post("/sales/lipa-mpesa", verifyStaff, lipaNaMpesa);
 
 // Get/Put/Delete | Bar Sales [ONE]
-// router.get("/sales/:id", verifyAdmin, getOneBarSale);
+router.get("/sales/:id", verifyStaff, getOneBarSale);
 // router.put("/sales/:id", verifyAdmin, updateOneBarSale);
 // router.delete("/sales/:id", verifyAdmin, deleteOneBarSale);
 
