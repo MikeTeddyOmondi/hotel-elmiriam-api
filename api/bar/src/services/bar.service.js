@@ -12,8 +12,11 @@ module.exports = {
       drinkCode,
       typeOfDrink,
       uom,
+      packageQty,
       buyingPrice,
       sellingPrice,
+      buyingStockPrice,
+      sellingStockPrice,
       imageUrl,
     } = drink;
 
@@ -22,8 +25,11 @@ module.exports = {
       drinkCode,
       typeOfDrink,
       uom,
+      packageQty,
       buyingPrice,
       sellingPrice,
+      buyingStockPrice,
+      sellingStockPrice,
       imageUrl,
     });
 
@@ -64,8 +70,8 @@ module.exports = {
     // Searching for drink given the unique Object ID
     let drink = {};
 
-    await Drink.findOne({ _id: objectID })
-      .then(({_doc}) => {
+    await Drink.findById(objectID)
+      .then(({ _doc }) => {
         console.log(`> Drink found: ${_doc._id}`);
         drink = { ..._doc };
       })
@@ -116,11 +122,36 @@ module.exports = {
       })
       .catch((err) => {
         console.log(
-          `> [Bar Service] An error occurred while saving the bar purchase (${barPurchase}) - ${err.message}`
+          `> [Bar Service] An error occurred while saving the bar purchase (${newBarPurchase._id}) - ${err.message}`
         );
-        return;
+        return err;
       });
     return newBarPurchase;
+  },
+  findBarPurchase: async (objectID) => {
+    // Searching for bar purchase given the unique Object ID
+    let barPurchaseMade = {};
+    // console.log({ objectID });
+
+    await BarPurchase.findById(objectID)
+      .exec()
+      .then((objectDoc) => {
+        if (objectDoc === null) {
+          barPurchaseMade = {};
+          return;
+        }
+        const { _doc } = objectDoc;
+        console.log(`> [Bar Service] Bar purchase found - ${_doc._id}`);
+        barPurchaseMade = { ..._doc };
+      })
+      .catch((err) => {
+        console.log(
+          `> [Bar Service] An error occurred while finding the single bar purchase - ${err.message}`
+        );
+        barPurchaseMade = null;
+      });
+
+    return barPurchaseMade;
   },
   fetchBarPurchases: async () => {
     // Logic here
@@ -186,7 +217,28 @@ module.exports = {
 
     return newBarSale;
   },
-  fetchBarSale: async (saleID) => {
+  fetchAllBarSales: async () => {
+    // Logic here
+    let sales = [];
+
+    await BarSale.find()
+      .populate("customer")
+      .populate("drinks.productID", "Drink")
+      .then((barSales) => {
+        console.log({ barSales });
+        sales = barSales;
+      })
+      .catch((err) => {
+        console.log(
+          `> [Bar Service] An error occurred while fetching the sale data - ${err.message}`
+        );
+        sales = [];
+        return err;
+      });
+
+    return sales;
+  },
+  fetchBarSale: async (salesId) => {
     // Logic here
     let sale;
 
