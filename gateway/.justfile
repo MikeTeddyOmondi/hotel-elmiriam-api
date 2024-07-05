@@ -7,9 +7,9 @@ build-image:
   docker build -t ranckosolutionsinc/hotel-elmiriam-api-gateway:v1 .
 
 # Docker compose 
-run-compose:
+compose:
   docker compose up -d
 
 # Docker compose down
-run-compose-down:
+compose-down:
   docker compose down
