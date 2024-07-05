@@ -16,8 +16,11 @@ const {
   findDrink,
   fetchAllDrinks,
   saveBarPurchase,
+  findBarPurchase,
   fetchBarPurchases,
   updateStockQuantity,
+  fetchAllBarSales,
+  fetchBarSale,
 } = require("../services/bar.service");
 
 const BUCKET_NAME = String("hotel-elmiriam");
@@ -65,8 +68,15 @@ exports.getOneBarDrink = async (req, res, next) => {
 exports.addBarDrinks = async (req, res, next) => {
   // const bodyData = JSON.parse(req.body);
   const bodyData = req.body;
-  const { drinkName, drinkCode, typeOfDrink, uom, buyingPrice, sellingPrice } =
-    bodyData;
+  const {
+    drinkName,
+    drinkCode,
+    typeOfDrink,
+    uom,
+    packageQty,
+    buyingPrice,
+    sellingPrice,
+  } = bodyData;
 
   const { mimetype, originalname, path } = req.file ?? {};
   // console.log({ mimetype, originalname, path });
@@ -78,6 +88,7 @@ exports.addBarDrinks = async (req, res, next) => {
     !drinkCode ||
     !typeOfDrink ||
     !uom ||
+    !packageQty ||
     !buyingPrice ||
     !sellingPrice
   ) {
@@ -122,9 +133,9 @@ exports.addBarDrinks = async (req, res, next) => {
     });
   }
 
-  if (uom !== "bottles" && uom !== "crates") {
+  if (uom !== "bottles" && uom !== "crates" && uom !== "pack") {
     errors = {
-      message: "Units of measurement(uom) accepted: bottles or crates",
+      message: "Units of measurement(uom) accepted: bottles, crates or pack",
     };
     return res.status(400).json({
       success: false,
@@ -147,9 +158,9 @@ exports.addBarDrinks = async (req, res, next) => {
   let imageUrl = "";
 
   if (MINIO_API_HOST == undefined) {
-    createError(500, `[#] Minio configuration required!`);
+    return next(createError(500, `[#] Minio configuration required!`));
   } else {
-    imageUrl = `http://${MINIO_API_HOST}:9003/${BUCKET_NAME}/${path}`;
+    imageUrl = `https://${MINIO_API_HOST}/${BUCKET_NAME}/${path}`;
   }
 
   if (imageUrl.includes(undefined) || imageUrl === "") {
@@ -161,18 +172,32 @@ exports.addBarDrinks = async (req, res, next) => {
     );
   }
 
-  const newDrink = new Drink({
+  let calculatedBuyingPrice = 0;
+  let calculatedSellingPrice = 0;
+
+  if (uom === "crates" || uom === "pack") {
+    calculatedBuyingPrice = buyingPrice / packageQty;
+    calculatedSellingPrice = sellingPrice / packageQty;
+  } else {
+    calculatedBuyingPrice = buyingPrice;
+    calculatedSellingPrice = sellingPrice;
+  }
+
+  const newDrink = {
     drinkName,
     drinkCode,
     typeOfDrink,
     uom,
-    buyingPrice,
-    sellingPrice,
+    packageQty,
+    buyingPrice: calculatedBuyingPrice,
+    sellingPrice: calculatedSellingPrice,
+    buyingStockPrice: buyingPrice,
+    sellingStockPrice: sellingPrice,
     imageUrl,
-  });
+  };
   console.log({ newDrink });
 
-  saveDrink(newDrink)
+  await saveDrink(newDrink)
     .then((doc) => {
       res.status(201).json({
         success: true,
@@ -207,138 +232,131 @@ exports.getBarPurchases = async (req, res, next) => {
   }
 };
 
-// Bar purchases - Add Bar Purchases Form | GET
-exports.getBarPurchasesFormPanel = (req, res) => {
-  // Initialize drink codes to display
-  let drinkCodes = {};
+// Bar purchases | GET
+exports.getOneBarPurchase = async (req, res, next) => {
+  const objectID = req.params.id;
+  try {
+    const barPurchase = await findBarPurchase(objectID);
 
-  // fetch all drink codes from database
-  fetchAllDrinks()
-    .then((allDrinks) => {
-      //console.log(allDrinks);
+    // TODO: check null
+    if (Object.fromEntries(barPurchase).length === 0 ) {
+      return next(createError(400, `Bar purchase: ${objectID} not found!`));
+    }
 
-      drinkCodes = allDrinks.map(({ drinkCode }) => drinkCode);
-
-      // render the page
-      res.render("admin/barPurchasesForm", {
-        drinkCodes,
-        user: req.user,
-        title: "Bar Purchases - Add List",
-        layout: "./layouts/adminLayout.ejs",
-      });
-    })
-    .catch((err) => {
-      console.log(`> An error occurred while fetching data: ${err.message}`);
+    res.status(200).json({
+      success: true,
+      data: { barPurchase },
     });
+  } catch (error) {
+    console.log({ error });
+    return next(createError(500, "Error fetching the bar purchase"));
+  }
 };
 
-// Bar purchases - Add Bar Purchases Form | POST
-exports.postBarPurchasesFormPanel = (req, res) => {
-  const { receiptNumber, product, quantity, supplier } = req.body;
+// Bar purchases | POST
+exports.postBarPurchases = async (req, res, next) => {
+  try {
+    const { receiptNumber, product, quantity, supplier } = req.body;
 
-  console.log({ receiptNumber, product, quantity, supplier });
+    let errors = {};
 
-  let errors = [];
-  let drinks = {};
-  let drinkCodes = {};
-  let buyingPrice = 0;
+    if (!receiptNumber || !product || !quantity || !supplier) {
+      errors = { message: "Please enter all fields" };
+      return next(createError(400, `Please enter all fields!`));
+    }
 
-  // fetch all drink codes from database
-  fetchAllDrinks()
-    .then((allDrinks) => {
-      drinks = allDrinks;
-      drinkCodes = allDrinks.map(({ drinkCode }) => drinkCode);
+    // console.log({ receiptNumber, product, quantity, supplier });
 
-      // Bar Purchases Logic
-      if (!receiptNumber || !product || !quantity || !supplier) {
-        errors.push({ msg: "Please enter all fields" });
-      }
+    // Confirm the product exists
+    const productInfo = await findDrink(product);
 
-      if (errors.length > 0) {
-        res.render("admin/barPurchasesForm", {
-          errors,
-          quantity,
-          availability,
-          drinkCodes,
-          user: req.user,
-          title: "Bar Purchases | Add List",
-          layout: "./layouts/adminLayout.ejs",
-        });
-      } else {
-        // Get the buying price after specific product search
-        searchDrink(product)
-          .then((drinkFound) => {
-            // Get the buying price of the product
-            buyingPrice = drinkFound.buyingPrice;
+    if (String(productInfo._id) !== product) {
+      return next(createError(404, `Product: ${product} was not found!`));
+    }
 
-            // Calculate Stock value
-            let stockValue = buyingPrice * Number(quantity);
+    let stockValue = 0;
 
-            const newPurchase = {
-              receiptNumber,
-              product: drinkFound._id,
-              quantity,
-              stockValue,
-              supplier,
-            };
+    // Calculate Stock value
+    if (productInfo.uom === "bottles") {
+      stockValue = productInfo.buyingStockPrice * Number(quantity);
+    } else if (productInfo.uom === "crates") {
+      stockValue = productInfo.buyingStockPrice * (Number(quantity) / 24);
+    }
 
-            // Drink to update stock quantity & inStock status
-            const drinkToUpdate = drinkFound;
+    // Save the purchase & update stock quantity
+    const newBarPurchase = {
+      receiptNumber,
+      product: productInfo._id,
+      quantity: Number(quantity),
+      stockValue,
+      supplier,
+    };
 
-            // Save Bar Purchase
-            saveBarPurchase(newPurchase)
-              .then((purchaseMade) => {
-                console.log(
-                  `> [Controller Logs] New Bar Purchase: ${purchaseMade}`
-                );
-                req.flash(
-                  "success_msg",
-                  `Saved the new bar stock purchase successfully! `
-                );
-              })
-              .then(() => {
-                // Update Stock Quantity
-                updateStockQuantity(drinkToUpdate, quantity)
-                  .then(() => {
-                    req.flash(
-                      "success_msg",
-                      `Updated the drink stocks successfully!`
-                    );
-                    return res.redirect("/admin/bar-purchases/add");
-                  })
-                  .catch((err) => {
-                    throw err;
-                  });
-              })
-              .catch((err) => {
-                console.log(
-                  `> [Controller Error] An error occurred while saving the data: ${err.message}`
-                );
-                req.flash(
-                  "error_msg",
-                  `An error occurred while saving the data!`
-                );
-                return res.redirect("/admin/bar-purchases/add");
-              });
+    await saveBarPurchase(newBarPurchase)
+      .then(async (savedBarPurchase) => {
+        // console.log({ savedBarPurchase });
+        console.log(`[#] New Bar Purchase: ${savedBarPurchase._id}`);
+
+        await updateStockQuantity(productInfo, quantity)
+          .then(() => {
+            console.log(
+              `[#] Updated stock quantity of product: ${productInfo._id} successfully!`
+            );
+
+            res.status(201).json({
+              success: true,
+              data: {
+                message: `Bar Purchase: ${savedBarPurchase._id} created successfully!`,
+              },
+            });
           })
           .catch((err) => {
-            console.log(
-              `> [Controller Error] Product with that code was not found!!!...`
+            throw new Error(
+              `Error creating the new bar purchase: ${err.message}`
             );
-
-            req.flash(
-              "error_msg",
-              `Product with this code ${product} was not found!`
-            );
-            return res.redirect("/admin/bar-purchases/add");
           });
-      }
-    })
-    .catch((err) => {
-      console.log(
-        `> [Controller Error] An error occurred while fetching data: ${err.message}`
-      );
-      req.flash("error_msg", `An error occurred while fetching data!`);
-      return res.redirect("/admin/bar-purchases/add");
-    });
+      })
+      .catch((err) => {
+        throw new Error(`Error creating the new bar purchase: ${err.message}`);
+      });
+  } catch (err) {
+    console.log(`[!] Error creating the new bar purchase: ${err}`);
+    return next(
+      createError(500, `Error creating the new bar purchase: ${err.message}`)
+    );
+  }
 };
+
+// ______________________________________
+// ADD BAR SALES INFORMATION
+// ______________________________________
+
+exports.getBarSales = async (res, req, next) => {
+  try {
+    const sales = await fetchAllBarSales();
+    res.status(200).json({
+      success: true,
+      data: { sales },
+    });
+  } catch (error) {
+    return next(createError(500, "Error fetching drinks"));
+  }
+};
+
+exports.getOneBarSale = async (res, req, next) => {
+  const objectID = req.params.id;
+  try {
+    const sale = await fetchBarSale(objectID);
+    res.status(200).json({
+      success: true,
+      data: { sale },
+    });
+  } catch (error) {
+    return next(createError(500, "Error fetching the bar sale"));
+  }
+};
+
+exports.postBarSales = async () => {};
+
+// Lipa na Mpesa
+exports.lipaNaMpesa = async () => {};
