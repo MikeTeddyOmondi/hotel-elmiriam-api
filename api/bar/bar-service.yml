@@ -8,8 +8,8 @@ services:
       - PORT=8004
     env_file:
       - ./.env
-    ports:
-      - "8004:8004"
+    # ports:
+    #   - "8004:8004"
     networks:
       - hotel-elmiriam-network
     depends_on:
