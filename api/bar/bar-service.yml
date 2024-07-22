@@ -26,11 +26,11 @@ services:
       - 9003:9000
       - 9001:9001
     volumes:
-      - ./uploads:/data    
-    networks:    
+      - ./uploads:/data
+    networks:
       - hotel-elmiriam-network
-    command: server /data --console-address ":9001"    
- 
+    command: server /data --console-address ":9001"
+
 networks:
   hotel-elmiriam-network:
     name: hotel-elmiriam

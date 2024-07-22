@@ -7,7 +7,7 @@ const Drink = require("../models/Drink");
 
 // Utils
 const { createError } = require("../utils/error");
-const { MINIO_API_HOST } = require("../config/config.js");
+const { S3_HOSTNAME } = require("../config/config.js");
 
 // Import Bar Service
 const {
@@ -157,10 +157,10 @@ exports.addBarDrinks = async (req, res, next) => {
 
   let imageUrl = "";
 
-  if (MINIO_API_HOST == undefined) {
+  if (S3_HOSTNAME == undefined) {
     return next(createError(500, `[#] Minio configuration required!`));
   } else {
-    imageUrl = `https://${MINIO_API_HOST}/${BUCKET_NAME}/${path}`;
+    imageUrl = `https://${S3_HOSTNAME}/${BUCKET_NAME}/${path}`;
   }
 
   if (imageUrl.includes(undefined) || imageUrl === "") {
