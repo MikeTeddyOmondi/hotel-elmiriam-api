@@ -12,13 +12,20 @@ const { RABBITMQ_URL } = process.env;
 (async () => {
   const queue = "mpesa";
 
-  const connection = await connect(RABBITMQ_URL ?? "localhost:5672");
+  let connection;
+
+  try {
+    connection = await connect(RABBITMQ_URL);
+  } catch (error) {
+    console.error({connErr: `RabbitMQ connection failed: ${error.message}`});
+    return;
+  }
 
   const mpesaChannel = await connection.createChannel();
   await mpesaChannel.assertQueue(queue);
 
   // Listener
-  mpesaChannel.consume(queue, async (msg) => {
+  await mpesaChannel.consume(queue, async (msg) => {
     if (msg !== null) {
       console.log("Recieved:", msg.content.toString("utf8"));
       try {

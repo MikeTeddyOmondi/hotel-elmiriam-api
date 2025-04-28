@@ -17,7 +17,7 @@ services:
 
   minio:
     container_name: hotel-elmiriam-object-store
-    image: minio/minio
+    image: quay.io/minio/minio:latest
     restart: always
     environment:
       - MINIO_ROOT_USER=minio
@@ -26,7 +26,8 @@ services:
       - 9003:9000
       - 9001:9001
     volumes:
-      - ./uploads:/data
+      # - ./uploads:/data
+      - minio-uploads:/data
     networks:
       - hotel-elmiriam-network
     command: server /data --console-address ":9001"
@@ -36,3 +37,6 @@ networks:
     name: hotel-elmiriam
     driver: bridge
     external: true
+
+volumes:
+  minio-uploads:

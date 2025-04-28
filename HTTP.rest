@@ -1,0 +1,22 @@
+POST http://localhost:8009/api/auth/register
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "id_number": "33503527",
+    "userType": "management",
+    "email": "admin@elmariam.com",
+    "password": "password"
+}
+
+### Create Bar purchase 
+POST http://localhost:8009/api/bar/purchases
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MGY3NTFhYzgzNDhkZDUyNTY1MGM2NCIsInVzZXJUeXBlIjoibWFuYWdlbWVudCIsImlzQWRtaW4iOnRydWUsImlhdCI6MTc0NTg0OTY0NiwiZXhwIjoxNzQ1ODUxNDQ2fQ.-y1AcrhXvM1ZNZH4SgjcJ3xRErU3mrHfR4MAvrPSfY0
+
+{ 
+    "receiptNumber": "RCPT001", 
+    "product": "680f8fb6ffd0fe98b4f15e45", 
+    "quantity": "12", 
+    "supplier": "UDV" 
+}
